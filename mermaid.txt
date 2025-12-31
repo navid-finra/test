@@ -1,0 +1,348 @@
+erDiagram
+  %% =========================================================
+  %% Alternative A: Single Centralized Preference Data Store (PDS)
+  %% =========================================================
+  %% Key design notes (from comments):
+  %% 1) PREFERENCE_CUSTOMER_PREFERENCE is the GRAND / centralized table (system of record).
+  %% 2) One API upserts preferences into the grand table.
+  %% 3) SOURCE_EVENT registers expected source+product+event+preference (+ optional consent level/category) and has PRIORITY.
+  %% 4) Consent/Opt-out can be modeled as status + lookup tables and can be left out of the business key if desired.
+  %% 5) No separate AUDIT_LOG database: audit/history is integrated in this same DB (history table + audit columns).
+  %% 6) Metrics can come from all sources and attach to preferences via metric link tables.
+
+  %% =========================
+  %% Core Dimensions / Lookups
+  %% =========================
+  SOURCE_SYSTEM {
+    int source_system_id PK
+    string source_system_cd
+    string source_system_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PRODUCT_TYPE {
+    int product_type_id PK
+    string product_type_cd
+    string product_type_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  EVENT_TYPE {
+    int event_type_id PK
+    string event_type_cd
+    string event_type_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  REFERENCE_TYPE {
+    int reference_type_id PK
+    string reference_type_cd
+    string reference_type_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_CATEGORY {
+    int preference_category_id PK
+    string preference_category_cd
+    string preference_category_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_TYPE {
+    int preference_type_id PK
+    int preference_category_id FK
+    string preference_type_cd
+    string preference_type_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  CONSENT_TYPE {
+    int consent_type_id PK
+    string consent_type_cd
+    string consent_type_desc
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  CONSENT_STATUS {
+    int consent_status_id PK
+    string consent_status_cd   %% e.g., GRANTED / DENIED / UNKNOWN
+    string consent_status_desc
+    int active_ind
+  }
+
+  OPT_OUT_TYPE {
+    int opt_out_type_id PK
+    string opt_out_type_cd
+    string opt_out_type_desc
+    int active_ind
+  }
+
+  OPT_OUT_STATUS {
+    int opt_out_status_id PK
+    string opt_out_status_cd   %% e.g., OPTED_OUT / NOT_OPTED_OUT / UNKNOWN
+    string opt_out_status_desc
+    int active_ind
+  }
+
+  %% =========================
+  %% Party / Customer Entities
+  %% =========================
+  CUSTOMER {
+    int customer_id PK
+    string ucid  %% stable customer identifier
+    string customer_nm
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  ACCOUNT {
+    int account_id PK
+    string account_nbr
+    string account_type_cd
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  CONTACT {
+    int contact_id PK
+    string contact_type_cd     %% email/phone/address/etc.
+    string contact_value_txt
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  %% ==========================================
+  %% Source Event Registry (expected combinations)
+  %% ==========================================
+  PREFERENCE_SOURCE_EVENT {
+    int source_event_id PK
+    int source_system_id FK
+    int product_type_id FK
+    int event_type_id FK
+    int preference_type_id FK
+    int reference_type_id FK
+    int consent_type_id FK      %% optional - can be used to validate “level of consent”
+    int priority_nbr            %% REQUIRED per comment (priority captured)
+    int active_ind
+    string source_event_cd
+    string source_event_desc
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  %% ==========================================
+  %% Grand Central Preference Table (system of record)
+  %% ==========================================
+  PREFERENCE_CUSTOMER_PREFERENCE {
+    int preference_id PK
+    int customer_id FK
+    int account_id FK
+    int contact_id FK
+
+    int source_event_id FK       %% always ties to one source event
+    int source_system_id FK
+    int product_type_id FK
+    int event_type_id FK
+    int preference_type_id FK
+    int reference_type_id FK
+
+    int consent_type_id FK       %% may be left out of the uniqueness key
+    int consent_status_id FK
+    int opt_out_type_id FK
+    int opt_out_status_id FK
+
+    int priority_nbr             %% optional denormalization from source_event
+    string preference_status_cd  %% ACTIVE/INACTIVE (or use active_ind)
+    datetime effective_start_ts
+    datetime effective_end_ts
+
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  %% ==================================================
+  %% Integrated Audit / History (no separate AUDIT_LOG DB)
+  %% ==================================================
+  PREFERENCE_CUSTOMER_PREFERENCE_HISTORY {
+    int preference_history_id PK
+    int preference_id FK
+
+    string change_type_cd       %% INSERT/UPDATE/DELETE
+    string changed_by_nm
+    datetime changed_ts
+
+    %% snapshot of key business fields (store what you need for audit)
+    int customer_id
+    int account_id
+    int contact_id
+    int source_event_id
+    int preference_type_id
+    int consent_status_id
+    int opt_out_status_id
+    string preference_status_cd
+    datetime effective_start_ts
+    datetime effective_end_ts
+  }
+
+  %% =========================
+  %% Metrics (from all sources)
+  %% =========================
+  PREFERENCE_METRIC_REFERENCE {
+    int metric_id PK
+    string metric_cd
+    string metric_desc
+    string metric_value_datatype_cd  %% STRING/NUMBER/BOOL/JSON
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_CUSTOMER_PREFERENCE_METRIC {
+    int preference_metric_link_id PK
+    int preference_id FK
+    int metric_id FK
+    int source_system_id FK       %% supports “metrics from all sources”
+    string metric_value_msr       %% store as string; enforce datatype via reference
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  %% ==========================================
+  %% Existing PDS Alert Tables (from Confluence)
+  %% ==========================================
+  PREFERENCE_CUSTOMER_ALERT_LINK {
+    int customer_alert_link_id PK
+    int customer_id FK
+    int account_id FK
+    int contact_id FK
+
+    string alert_join_cd_desc     %% OLB DB Unique ID for alert (initial load reference)
+    string secure_one_time_ind    %% if applicable
+    int active_ind
+    datetime inactivated_dt
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_ALERT_METRIC_REFERENCE {
+    int alert_metric_id PK
+    string alert_metric_cd
+    string alert_metric_desc
+    string metric_value_datatype_cd
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_CUSTOMER_ALERT_METRIC_LINK {
+    int customer_alert_metric_link_id PK
+    int customer_alert_link_id FK
+    int alert_metric_id FK
+    string alert_metric_value_msr
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  PREFERENCE_REF_DATA_TYPE {
+    int ref_data_type_id PK
+    string ref_data_type_desc
+    string ref_data_type_cd
+    string ref_data_value_txt
+    int active_ind
+    string create_by_nm
+    datetime create_ts
+    string last_update_by_nm
+    datetime last_update_ts
+  }
+
+  %% =========================
+  %% Relationships
+  %% =========================
+  PREFERENCE_CATEGORY ||--o{ PREFERENCE_TYPE : "has many"
+  SOURCE_SYSTEM ||--o{ PREFERENCE_SOURCE_EVENT : "registers"
+  PRODUCT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : "registers"
+  EVENT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : "registers"
+  PREFERENCE_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : "registers"
+  REFERENCE_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : "registers"
+  CONSENT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : "optional validation"
+
+  CUSTOMER ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "owns"
+  ACCOUNT  ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "optional"
+  CONTACT  ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "optional"
+
+  PREFERENCE_SOURCE_EVENT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "ties"
+  SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "source"
+  PRODUCT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "product"
+  EVENT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "event"
+  PREFERENCE_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "preference"
+  REFERENCE_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "reference"
+  CONSENT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "level"
+  CONSENT_STATUS ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "status"
+  OPT_OUT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "type"
+  OPT_OUT_STATUS ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : "status"
+
+  PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_HISTORY : "audit trail"
+
+  PREFERENCE_METRIC_REFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : "defines"
+  PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : "has metrics"
+  SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : "metric source"
+
+  CUSTOMER ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : "alerts"
+  ACCOUNT  ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : "alerts"
+  CONTACT  ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : "alerts"
+  PREFERENCE_CUSTOMER_ALERT_LINK ||--o{ PREFERENCE_CUSTOMER_ALERT_METRIC_LINK : "has"
+  PREFERENCE_ALERT_METRIC_REFERENCE ||--o{ PREFERENCE_CUSTOMER_ALERT_METRIC_LINK : "defines"
