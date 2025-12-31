@@ -1,0 +1,142 @@
+Core “Customer / Identity” tables
+DATA_SUBJECT
+
+Description: Golden record for a person/entity whose preferences we manage. Stores the canonical data_subject_id, subject type, and crosswalk fields to map back to upstream customer identifiers (source_customer_ref_id, source_system_cd, master_data_subject_id).
+
+Source: Master Customer / Party / CRM domain (customer MDM), plus batch/stream identity resolution jobs that link source IDs to the master subject.
+
+ACCOUNT
+
+Description: Represents the customer’s account relationship(s) (e.g., checking, savings, loan) tied to the data subject. Enables preferences to optionally apply at the account level.
+
+Source: Core banking / account servicing platform (usually batch from core + incremental updates from account events).
+
+CONTACT_POINT
+
+Description: Contact endpoints for the subject (email, phone, address, push token, etc.), with type and a primary_ind. Used for preference delivery channels and alert routing.
+
+Source: CRM / customer profile service and/or communication platform (batch sync + near-real-time updates when customer updates contact info).
+
+Reference / Lookup tables (controlled vocabularies)
+REF_SOURCE_SYSTEM
+
+Description: Catalog of upstream systems that can send preference-related requests/events. Used to validate and standardize “where data came from.”
+
+Source: Enterprise integration governance / internal configuration (manually managed or CI/CD-managed reference data).
+
+REF_LOB
+
+Description: Line-of-business taxonomy (Retail, Cards, Mortgage, Wealth, etc.). Used to scope preferences by business domain.
+
+Source: Enterprise data governance / business taxonomy (manual reference data; slow-changing).
+
+REF_CHANNEL
+
+Description: Allowed channels for communication / delivery (EMAIL, SMS, PUSH, MAIL, IN_APP, etc.).
+
+Source: Communication governance / preference program config (manual reference data).
+
+REF_PRODUCT_TYPE
+
+Description: Product type taxonomy (LOAN, CREDIT_CARD, CHECKING, INVESTMENT, etc.). Lets preferences be scoped at a product-type level.
+
+Source: Product catalog / enterprise product master (reference feed).
+
+REF_PRODUCT
+
+Description: Specific product catalog entries (e.g., “Platinum Rewards Card”), linked to product type. Used when preferences apply to a specific product.
+
+Source: Product catalog / product master (reference feed).
+
+REF_EVENT_TYPE
+
+Description: Event taxonomy for preference triggers and business actions (e.g., WITHDRAWAL, STATEMENT, FRAUD_ALERT, MARKETING_OFFER).
+
+Source: Event governance / product analytics taxonomy (manual reference data; updated as new events are introduced).
+
+REF_PREFERENCE_CATEGORY
+
+Description: High-level grouping of preferences (e.g., NOTIFICATIONS, MARKETING, SECURITY, SERVICE).
+
+Source: Preference program configuration (manual reference data).
+
+REF_PREFERENCE_TYPE
+
+Description: Specific preference types within a category (e.g., “Low Balance Alerts”, “Marketing SMS”, “Paperless Statements”).
+
+Source: Preference program configuration (manual reference data).
+
+REF_CONSENT_TYPE
+
+Description: The level/type of consent (e.g., EXPLICIT, IMPLIED, REQUIRED_BY_REG, etc.) used to interpret consent_status_cd.
+
+Source: Compliance / legal-approved consent taxonomy (manual reference data).
+
+REF_OPT_OUT_TYPE
+
+Description: Types of opt-out mechanisms (GLOBAL_OPT_OUT, CHANNEL_OPT_OUT, CAMPAIGN_OPT_OUT, etc.) used to interpret opt_out_status_cd.
+
+Source: Compliance / communications governance (manual reference data).
+
+“Source event” registration and auditing
+SOURCE_EVENT
+
+Description: Registry of expected/valid source events coming from each upstream system, optionally scoped by product/product_type/event/preference_type/category/LOB/consent/opt_out, plus priority. This supports validating inbound requests (“are we expecting this source_event?”) and routing by priority.
+
+Source: Integration onboarding/config maintained by platform team (initially manual; later could be managed through an admin UI or config-as-code).
+
+SOURCE_EVENT_HISTORY
+
+Description: Change history for SOURCE_EVENT entries (audit trail of config changes over time, who changed what, and why). Useful for troubleshooting and compliance.
+
+Source: Internal system-generated whenever SOURCE_EVENT is created/updated/deactivated (application audit).
+
+Central Preference Data Management (current + history)
+PREFERENCE_STATE_CURRENT ✅ Central system-of-record (“golden preference state”)
+
+Description: The centralized current-state preference table. One row represents the current preference status/value for a subject, scoped by the combination of dimensions (customer + channel + event_type + preference_type/category + consent/opt_out status + optional product/product_type/account + source_event), with priority to resolve conflicts. This is the table all downstream systems query to determine “what is the customer’s current preference right now?”
+
+Source: Preference API / Preference service as the system of record. Populated from:
+
+inbound preference create/update API calls (real-time),
+
+inbound source events validated via SOURCE_EVENT,
+
+batch reconciliation jobs (optional) to correct drift.
+
+PREFERENCE_STATE_HISTORY
+
+Description: Append-only history of changes to preference state (who/when/why), typically storing a snapshot JSON or before/after representation. Used for traceability, disputes, and audits.
+
+Source: Internal system-generated on every insert/update to PREFERENCE_STATE_CURRENT.
+
+Alerts & metrics (preference-driven)
+PREFERENCE_ALERT_REFERENCE
+
+Description: Catalog of alert definitions that can be enabled for customers (e.g., “Low Balance Alert”, “Large Withdrawal Alert”). Used as the master list for alert linking.
+
+Source: Alert product configuration / notification platform configuration (manual/reference feed).
+
+PREFERENCE_ALERT_METRIC_REFERENCE
+
+Description: Catalog of metrics/parameters that an alert may require (e.g., threshold_amount, rolling_window_minutes), optionally linked to a reference data type. Defines what “tunable knobs” exist for each alert.
+
+Source: Alert product configuration / rules engine config (manual/reference feed).
+
+PREFERENCE_REF_DATA_TYPE
+
+Description: Generic reference type/value table to define metric data types and allowed values (e.g., ENUM sets, units, formats). Supports validation/UI dropdowns.
+
+Source: Platform configuration / governance (manual reference data).
+
+PREFERENCE_CUSTOMER_ALERT_LINK
+
+Description: Customer-level enablement of an alert (which subject/account/contact_point is subscribed to which alert), including activation/inactivation timestamps. This is the “customer subscribed to alert X” bridge table.
+
+Source: Preference API / Alert subscription API (real-time user changes) + batch loads from legacy alert platforms during migration.
+
+PREFERENCE_CUSTOMER_ALERT_METRIC_LINK
+
+Description: Stores the configured metric values for a customer’s alert subscription (e.g., for “Low Balance Alert”, threshold = 100.00). Ties to the customer_alert_link and alert_metric_reference.
+
+Source: Preference API / Alert subscription API (real-time) + batch migration from legacy alert systems.
