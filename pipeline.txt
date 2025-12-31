@@ -1,0 +1,52 @@
+flowchart TD
+    %% External Sources
+    RELAY["<b>RELAY Network</b><br/>Real-time API + Daily SFTP<br/>SMS Servicing Communications"]
+    ZETA["<b>ZETA</b><br/>Daily SFTP<br/>Email & SMS Marketing"]
+    VINCIO["<b>VINCIO</b><br/>Daily Oracle Feeds<br/>Collections SMS"]
+    GRYPHON["<b>GRYPHON</b><br/>Monthly Batch<br/>National DNC Registry"]
+    OLB["<b>OLB</b><br/>Initial Load Only<br/>Alert Preferences"]
+    
+    %% Staging Layer
+    STAGING["<b>STAGING TABLES</b><br/>STG_RELAY_CONSENT<br/>STG_ZETA_CONSENT<br/>STG_VINCIO_CONSENT<br/>STG_GRYPHON_DNC<br/>STG_OLB_ALERT<br/><br/>Landing zone for external data"]
+    
+    %% Validation Layer
+    VALIDATION["<b>SOURCE_EVENT</b><br/>Validation & Registry<br/><br/>✓ Are we expecting this event?<br/>✓ Priority-based routing<br/>✓ Source+Product+Event validation"]
+    
+    %% Request Logging Layer
+    LOGGING["<b>CONSENT_REQUEST</b><br/>Transaction Logging<br/><br/>• Request/Response tracking<br/>• API call logging<br/>• Batch job execution"]
+    
+    %% Central Store - System of Record
+    CENTRAL["<b>⭐ PREFERENCE_STATE_CURRENT ⭐</b><br/>GOLDEN PREFERENCE STATE<br/>System of Record<br/><br/>✅ Multi-dimensional scoping<br/>✅ Priority-based conflict resolution<br/>✅ Single API upserts<br/><br/>ALL DOWNSTREAM SYSTEMS QUERY HERE"]
+    
+    %% History/Audit Layer
+    HISTORY["<b>PREFERENCE_STATE_HISTORY</b><br/>Audit Trail & Provenance<br/><br/>• Who/When/Why tracking<br/>• Before/After snapshots<br/>• Source event provenance<br/>• Compliance & disputes"]
+    
+    %% Downstream Consumers
+    DOWNSTREAM["<b>DOWNSTREAM CONSUMERS</b><br/><br/>Marketing Platforms<br/>Notification Services<br/>Communication Channels<br/>Compliance Systems<br/>Reporting & Analytics"]
+    
+    %% Data Flow
+    RELAY --> STAGING
+    ZETA --> STAGING
+    VINCIO --> STAGING
+    GRYPHON --> STAGING
+    OLB --> STAGING
+    
+    STAGING --> VALIDATION
+    VALIDATION --> LOGGING
+    LOGGING --> CENTRAL
+    CENTRAL --> HISTORY
+    CENTRAL --> DOWNSTREAM
+    
+    %% Citizens Bank Green Color Scheme
+    style RELAY fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    style ZETA fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    style VINCIO fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    style GRYPHON fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    style OLB fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    
+    style STAGING fill:#C8E6C9,stroke:#388E3C,stroke-width:3px
+    style VALIDATION fill:#A5D6A7,stroke:#43A047,stroke-width:3px
+    style LOGGING fill:#81C784,stroke:#4CAF50,stroke-width:3px
+    style CENTRAL fill:#2E7D32,stroke:#FFEB3B,stroke-width:5px,color:#FFFFFF
+    style HISTORY fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#FFFFFF
+    style DOWNSTREAM fill:#66BB6A,stroke:#388E3C,stroke-width:3px
