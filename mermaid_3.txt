@@ -6,6 +6,7 @@ erDiagram
     
     STG_RELAY_CONSENT {
         int stg_relay_id PK
+        int source_system_id FK
         string client_id
         string phone_number
         string consent_status
@@ -13,12 +14,14 @@ erDiagram
         datetime received_ts
         string source_payload_txt
         int processed_ind
+        string create_by_nm
         datetime create_ts
         datetime last_update_ts
     }
 
     STG_ZETA_CONSENT {
         int stg_zeta_id PK
+        int source_system_id FK
         string lob_code
         string email_address
         string phone_number
@@ -27,36 +30,42 @@ erDiagram
         datetime received_ts
         string source_payload_txt
         int processed_ind
+        string create_by_nm
         datetime create_ts
         datetime last_update_ts
     }
 
     STG_VINCIO_CONSENT {
         int stg_vincio_id PK
+        int source_system_id FK
         string account_nbr
         string phone_number
         string sms_consent_status
         datetime received_ts
         string source_payload_txt
         int processed_ind
+        string create_by_nm
         datetime create_ts
         datetime last_update_ts
     }
 
     STG_GRYPHON_DNC {
         int stg_gryphon_id PK
+        int source_system_id FK
         string phone_number
         string dnc_indicator
         string product_family
         datetime received_ts
         string source_payload_txt
         int processed_ind
+        string create_by_nm
         datetime create_ts
         datetime last_update_ts
     }
 
     STG_OLB_ALERT {
         int stg_olb_alert_id PK
+        int source_system_id FK
         string ucid
         string account_nbr
         string alert_type
@@ -65,6 +74,7 @@ erDiagram
         datetime received_ts
         string source_payload_txt
         int processed_ind
+        string create_by_nm
         datetime create_ts
         datetime last_update_ts
     }
@@ -410,9 +420,19 @@ erDiagram
     }
 
     %% ========================================
-    %% RELATIONSHIPS
+    %% RELATIONSHIPS - STAGING TO SOURCE SYSTEM
     %% ========================================
+    
+    SOURCE_SYSTEM ||--o{ STG_RELAY_CONSENT : sources
+    SOURCE_SYSTEM ||--o{ STG_ZETA_CONSENT : sources
+    SOURCE_SYSTEM ||--o{ STG_VINCIO_CONSENT : sources
+    SOURCE_SYSTEM ||--o{ STG_GRYPHON_DNC : sources
+    SOURCE_SYSTEM ||--o{ STG_OLB_ALERT : sources
 
+    %% ========================================
+    %% RELATIONSHIPS - CORE DIMENSIONS
+    %% ========================================
+    
     PREFERENCE_CATEGORY ||--o{ PREFERENCE_TYPE : has
     SOURCE_SYSTEM ||--o{ PREFERENCE_SOURCE_EVENT : registers
     PRODUCT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
@@ -421,9 +441,17 @@ erDiagram
     REFERENCE_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
     CONSENT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : validates
     
+    %% ========================================
+    %% RELATIONSHIPS - PARTY TO PREFERENCE
+    %% ========================================
+    
     CUSTOMER ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : owns
     ACCOUNT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : links
     CONTACT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : links
+    
+    %% ========================================
+    %% RELATIONSHIPS - SOURCE EVENT TO PREFERENCE
+    %% ========================================
     
     PREFERENCE_SOURCE_EVENT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : defines
     SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : sources
@@ -436,17 +464,33 @@ erDiagram
     OPT_OUT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : opts
     OPT_OUT_STATUS ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : status
     
+    %% ========================================
+    %% RELATIONSHIPS - TRANSACTION LOGGING
+    %% ========================================
+    
     PREFERENCE_SOURCE_EVENT ||--o{ CONSENT_REQUEST : validates
     SOURCE_SYSTEM ||--o{ CONSENT_REQUEST : originates
     CUSTOMER ||--o{ CONSENT_REQUEST : initiates
     CONSENT_REQUEST ||--o{ TRANSACTION_PAYLOAD : contains
     
+    %% ========================================
+    %% RELATIONSHIPS - AUDIT AND HISTORY
+    %% ========================================
+    
     PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_HISTORY : tracks
     PREFERENCE_SOURCE_EVENT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_HISTORY : provenance
+    
+    %% ========================================
+    %% RELATIONSHIPS - METRICS
+    %% ========================================
     
     PREFERENCE_METRIC_REFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : defines
     PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : measures
     SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : sources
+    
+    %% ========================================
+    %% RELATIONSHIPS - ALERTS
+    %% ========================================
     
     CUSTOMER ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : alerts
     ACCOUNT ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : alerts
