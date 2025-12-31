@@ -1,0 +1,455 @@
+erDiagram
+
+    %% ========================================
+    %% GROUP 1: SOURCE STAGING TABLES (External Data Ingestion)
+    %% ========================================
+    
+    STG_RELAY_CONSENT {
+        int stg_relay_id PK
+        string client_id
+        string phone_number
+        string consent_status
+        string consent_type
+        datetime received_ts
+        string source_payload_txt
+        int processed_ind
+        datetime create_ts
+        datetime last_update_ts
+    }
+
+    STG_ZETA_CONSENT {
+        int stg_zeta_id PK
+        string lob_code
+        string email_address
+        string phone_number
+        string email_optout_status
+        string sms_optout_status
+        datetime received_ts
+        string source_payload_txt
+        int processed_ind
+        datetime create_ts
+        datetime last_update_ts
+    }
+
+    STG_VINCIO_CONSENT {
+        int stg_vincio_id PK
+        string account_nbr
+        string phone_number
+        string sms_consent_status
+        datetime received_ts
+        string source_payload_txt
+        int processed_ind
+        datetime create_ts
+        datetime last_update_ts
+    }
+
+    STG_GRYPHON_DNC {
+        int stg_gryphon_id PK
+        string phone_number
+        string dnc_indicator
+        string product_family
+        datetime received_ts
+        string source_payload_txt
+        int processed_ind
+        datetime create_ts
+        datetime last_update_ts
+    }
+
+    STG_OLB_ALERT {
+        int stg_olb_alert_id PK
+        string ucid
+        string account_nbr
+        string alert_type
+        string alert_metric_cd
+        string alert_metric_value
+        datetime received_ts
+        string source_payload_txt
+        int processed_ind
+        datetime create_ts
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 2: CORE DIMENSIONS AND LOOKUPS
+    %% ========================================
+    
+    SOURCE_SYSTEM {
+        int source_system_id PK
+        string source_system_cd
+        string source_system_desc
+        string integration_type
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    PRODUCT_TYPE {
+        int product_type_id PK
+        string product_type_cd
+        string product_type_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    EVENT_TYPE {
+        int event_type_id PK
+        string event_type_cd
+        string event_type_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    REFERENCE_TYPE {
+        int reference_type_id PK
+        string reference_type_cd
+        string reference_type_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 3: PREFERENCE CLASSIFICATION
+    %% ========================================
+
+    PREFERENCE_CATEGORY {
+        int preference_category_id PK
+        string preference_category_cd
+        string preference_category_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    PREFERENCE_TYPE {
+        int preference_type_id PK
+        int preference_category_id FK
+        string preference_type_cd
+        string preference_type_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 4: CONSENT AND OPT-OUT
+    %% ========================================
+
+    CONSENT_TYPE {
+        int consent_type_id PK
+        string consent_type_cd
+        string consent_type_desc
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    CONSENT_STATUS {
+        int consent_status_id PK
+        string consent_status_cd
+        string consent_status_desc
+        int active_ind
+    }
+
+    OPT_OUT_TYPE {
+        int opt_out_type_id PK
+        string opt_out_type_cd
+        string opt_out_type_desc
+        int active_ind
+    }
+
+    OPT_OUT_STATUS {
+        int opt_out_status_id PK
+        string opt_out_status_cd
+        string opt_out_status_desc
+        int active_ind
+    }
+
+    %% ========================================
+    %% GROUP 5: PARTY AND CUSTOMER
+    %% ========================================
+
+    CUSTOMER {
+        int customer_id PK
+        string ucid
+        string customer_nm
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    ACCOUNT {
+        int account_id PK
+        string account_nbr
+        string account_type_cd
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    CONTACT {
+        int contact_id PK
+        string contact_type_cd
+        string contact_value_txt
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 6: SOURCE EVENT REGISTRY
+    %% ========================================
+
+    PREFERENCE_SOURCE_EVENT {
+        int source_event_id PK
+        int source_system_id FK
+        int product_type_id FK
+        int event_type_id FK
+        int preference_type_id FK
+        int reference_type_id FK
+        int consent_type_id FK
+        int priority_nbr
+        int active_ind
+        string source_event_cd
+        string source_event_desc
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 7: TRANSACTION AND REQUEST LOGGING
+    %% ========================================
+
+    CONSENT_REQUEST {
+        int request_id PK
+        int source_event_id FK
+        int source_system_id FK
+        int customer_id FK
+        string request_type_cd
+        string channel_type_cd
+        string transaction_type_cd
+        datetime request_ts
+        string request_status_cd
+        string request_payload_txt
+        string create_by_nm
+        datetime create_ts
+    }
+
+    TRANSACTION_PAYLOAD {
+        int payload_id PK
+        int request_id FK
+        string payload_type_cd
+        string request_payload_txt
+        string response_payload_txt
+        int payload_size_nbr
+        datetime create_ts
+    }
+
+    %% ========================================
+    %% GROUP 8: CENTRAL PREFERENCE (SYSTEM OF RECORD)
+    %% ========================================
+
+    PREFERENCE_CUSTOMER_PREFERENCE {
+        int preference_id PK
+        int customer_id FK
+        int account_id FK
+        int contact_id FK
+        int source_event_id FK
+        int source_system_id FK
+        int product_type_id FK
+        int event_type_id FK
+        int preference_type_id FK
+        int reference_type_id FK
+        int consent_type_id FK
+        int consent_status_id FK
+        int opt_out_type_id FK
+        int opt_out_status_id FK
+        int priority_nbr
+        string preference_status_cd
+        datetime effective_start_ts
+        datetime effective_end_ts
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 9: AUDIT AND HISTORY
+    %% ========================================
+
+    PREFERENCE_CUSTOMER_PREFERENCE_HISTORY {
+        int preference_history_id PK
+        int preference_id FK
+        int source_event_id FK
+        string change_type_cd
+        string changed_by_nm
+        datetime changed_ts
+        int customer_id
+        int account_id
+        int contact_id
+        int preference_type_id
+        int consent_status_id
+        int opt_out_status_id
+        string preference_status_cd
+        datetime effective_start_ts
+        datetime effective_end_ts
+    }
+
+    %% ========================================
+    %% GROUP 10: METRICS
+    %% ========================================
+
+    PREFERENCE_METRIC_REFERENCE {
+        int metric_id PK
+        string metric_cd
+        string metric_desc
+        string metric_value_datatype_cd
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    PREFERENCE_CUSTOMER_PREFERENCE_METRIC {
+        int preference_metric_link_id PK
+        int preference_id FK
+        int metric_id FK
+        int source_system_id FK
+        string metric_value_msr
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 11: ALERTS
+    %% ========================================
+
+    PREFERENCE_CUSTOMER_ALERT_LINK {
+        int customer_alert_link_id PK
+        int customer_id FK
+        int account_id FK
+        int contact_id FK
+        string alert_join_cd_desc
+        string secure_one_time_ind
+        int active_ind
+        datetime inactivated_dt
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    PREFERENCE_ALERT_METRIC_REFERENCE {
+        int alert_metric_id PK
+        string alert_metric_cd
+        string alert_metric_desc
+        string metric_value_datatype_cd
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    PREFERENCE_CUSTOMER_ALERT_METRIC_LINK {
+        int customer_alert_metric_link_id PK
+        int customer_alert_link_id FK
+        int alert_metric_id FK
+        string alert_metric_value_msr
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% GROUP 12: REFERENCE DATA
+    %% ========================================
+
+    PREFERENCE_REF_DATA_TYPE {
+        int ref_data_type_id PK
+        string ref_data_type_desc
+        string ref_data_type_cd
+        string ref_data_value_txt
+        int active_ind
+        string create_by_nm
+        datetime create_ts
+        string last_update_by_nm
+        datetime last_update_ts
+    }
+
+    %% ========================================
+    %% RELATIONSHIPS
+    %% ========================================
+
+    PREFERENCE_CATEGORY ||--o{ PREFERENCE_TYPE : has
+    SOURCE_SYSTEM ||--o{ PREFERENCE_SOURCE_EVENT : registers
+    PRODUCT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
+    EVENT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
+    PREFERENCE_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
+    REFERENCE_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : registers
+    CONSENT_TYPE ||--o{ PREFERENCE_SOURCE_EVENT : validates
+    
+    CUSTOMER ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : owns
+    ACCOUNT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : links
+    CONTACT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : links
+    
+    PREFERENCE_SOURCE_EVENT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : defines
+    SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : sources
+    PRODUCT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : categorizes
+    EVENT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : triggers
+    PREFERENCE_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : types
+    REFERENCE_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : references
+    CONSENT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : consents
+    CONSENT_STATUS ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : status
+    OPT_OUT_TYPE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : opts
+    OPT_OUT_STATUS ||--o{ PREFERENCE_CUSTOMER_PREFERENCE : status
+    
+    PREFERENCE_SOURCE_EVENT ||--o{ CONSENT_REQUEST : validates
+    SOURCE_SYSTEM ||--o{ CONSENT_REQUEST : originates
+    CUSTOMER ||--o{ CONSENT_REQUEST : initiates
+    CONSENT_REQUEST ||--o{ TRANSACTION_PAYLOAD : contains
+    
+    PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_HISTORY : tracks
+    PREFERENCE_SOURCE_EVENT ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_HISTORY : provenance
+    
+    PREFERENCE_METRIC_REFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : defines
+    PREFERENCE_CUSTOMER_PREFERENCE ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : measures
+    SOURCE_SYSTEM ||--o{ PREFERENCE_CUSTOMER_PREFERENCE_METRIC : sources
+    
+    CUSTOMER ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : alerts
+    ACCOUNT ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : alerts
+    CONTACT ||--o{ PREFERENCE_CUSTOMER_ALERT_LINK : alerts
+    PREFERENCE_CUSTOMER_ALERT_LINK ||--o{ PREFERENCE_CUSTOMER_ALERT_METRIC_LINK : has
+    PREFERENCE_ALERT_METRIC_REFERENCE ||--o{ PREFERENCE_CUSTOMER_ALERT_METRIC_LINK : defines
