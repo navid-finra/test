@@ -1,0 +1,21 @@
+Include these as callouts/notes on the diagram:
+
+One customer always tied to one customer (UCID is the stable customer identifier).
+
+Preference can be a combination of preference type and consent.
+
+Preference can be tied to one banking product.
+
+Tied to one consent; can have opt-in/opt-out; always tied to one source event.
+
+One API upserts preference; key includes customer+event+type(+consent)+source_event; if any different create a new preference.
+
+Consent and opt-out can be left out of the key.
+
+Audit is integrated with preference to be the centralized one; remove AUDIT_LOG database.
+
+Capture “priority” on the source event.
+
+Source event registers expected source + product/event/preference so requests can be validated.
+
+Supporting lookup tables feed the grand preference table; “everything goes to preference.”
