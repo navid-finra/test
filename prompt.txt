@@ -1,0 +1,121 @@
+Hi Sri M,
+
+I wanted to share the proposed plan for the next two weeks so we can move forward with the AI Governance-to-Execution Framework setup in a structured way.
+
+Our goal in this phase is to better understand PCORI’s priorities, requirements, constraints, and decision points across the key functional areas that will shape the AI operating model. Based on our discussion, I would like to begin with focused working sessions with the following stakeholders:
+
+Rakesh — security requirements, controls, risk considerations, and approval expectations
+Sri V — data requirements, data governance, source systems, and readiness considerations
+Christian — DevOps / platform considerations, environment constraints, deployment/support model, and technical dependencies
+
+Next week
+
+Working session with Rakesh
+Working session with Sri V
+
+Week after
+
+Working session with Christian
+Synthesize findings from the sessions
+Identify key requirements, constraints, risks, and dependencies
+Draft the initial AI governance-to-execution framework
+Prepare the first set of core artifacts, including:
+intake and triage structure
+governance decision points
+prioritization approach
+initial backlog / roadmap inputs
+recommended next-step workstreams
+
+At the end of the two-week period, I would propose a readout session with you to review the findings, confirm priorities, and align on the next phase.
+
+The expected next steps after this initial two-week period would be:
+
+Finalize the governance-to-execution framework
+Stand up the AI use case intake and prioritization process
+Build the initial prioritized backlog and roadmap
+Define the review and approval path for future AI initiatives
+Begin shaping the next wave of work around use case pipeline design, Copilot / Azure AI enablement, policy operationalization, and adoption planning
+
+Please let me know if you would like me to coordinate the sessions with Rakesh, Sri V, and Christian, or if you would prefer that they be scheduled through your office.
+
+Best,
+
+Slide 1 — Two-Week Discovery Plan
+
+Title:
+AI Governance-to-Execution Framework | Two-Week Discovery Plan
+
+Prompt:
+Create a clean executive report-style infographic slide in 16:9 landscape with a white background, dark navy title bar, and blue / steel gray / light gray color palette. The slide should look like a federal consulting status report visual, polished and highly structured, with rounded panels, subtle shadows, flat professional icons, and clean typography.
+
+At the top, place the title: “AI Governance-to-Execution Framework | Two-Week Discovery Plan”.
+
+Below the title, create a two-column timeline layout:
+
+Left column labeled “Next Week”
+Include two large horizontal panels with icons:
+
+Security Session — Rakesh
+Small sublabels: requirements, controls, risk considerations, approval expectations
+Data Session — Sri V
+Small sublabels: data governance, source systems, readiness, constraints
+
+Right column labeled “Week After”
+Include one large panel:
+
+DevOps / Platform Session — Christian
+Small sublabels: environment constraints, deployment model, support model, technical dependencies
+
+Under the timeline, add a wide synthesis section called “What This Work Produces” with 5 evenly spaced output boxes:
+
+requirements and constraints
+risks and dependencies
+governance decision points
+intake and triage structure
+roadmap / backlog inputs
+
+At the bottom, add a thin summary banner that says:
+“Objective: Gather cross-functional inputs needed to stand up the initial AI governance-to-execution framework.”
+
+Style should be minimal, professional, readable, and report-like. No stock-photo look, no marketing style, no clutter, no fake citations, no tiny text.
+
+Slide 2 — What Comes Next After Discovery
+
+Title:
+Post-Discovery Next Steps and Initial Deliverables
+
+Prompt:
+Create an executive report-style infographic slide in 16:9 landscape with a white background, dark navy header bar, and a blue / gray / slate / light steel palette. The style should feel like a McKinsey / federal advisory status slide, with clean structure, rounded rectangles, thin connector arrows, flat icons, and strong visual hierarchy.
+
+At the top, place the title: “Post-Discovery Next Steps and Initial Deliverables”.
+
+Below the title, create a left-to-right 5-step workflow with connected rounded boxes:
+
+Step 1 — Synthesize Findings
+Short labels: consolidate inputs, identify themes, align requirements
+
+Step 2 — Define Governance Framework
+Short labels: decision model, review gates, ownership, operating structure
+
+Step 3 — Build Core Artifacts
+Short labels: intake form, prioritization model, decision tracker, scorecard
+
+Step 4 — Create Initial Backlog & Roadmap
+Short labels: use case inventory, prioritization, sequencing, dependencies
+
+Step 5 — CIO Readout & Alignment
+Short labels: confirm priorities, validate next phase, approve path forward
+
+Below the workflow, add a horizontal section titled “Initial Deliverables” with 4 polished report-style tiles:
+
+AI governance-to-execution framework
+intake and triage model
+prioritization approach
+initial AI roadmap and backlog
+
+At the bottom right, add a small professional note box titled “Outcome” with the sentence:
+“A clear operating model for evaluating, prioritizing, and governing AI initiatives across PCORI.”
+
+Keep the design highly organized, executive, and status-meeting ready. No clutter, no fake citations, no tiny illegible text, no flashy marketing style.
+
+
