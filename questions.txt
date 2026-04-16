@@ -1,0 +1,55 @@
+Questions for both meetings
+
+Start with these in both sessions:
+
+What are the top 3 priorities or concerns you want this AI program to address?
+Where do you see the biggest opportunity for AI at PCORI?
+Where do you see the biggest risk?
+What types of AI use cases should we encourage first?
+What types of AI use cases should be avoided or tightly controlled?
+What approvals or checkpoints should happen before a use case moves forward?
+What would make a use case high priority from your perspective?
+What would make a use case not ready yet?
+Who else needs to be involved in decisions from your area?
+What would success look like in the next 3–6 months?
+Questions for Rakesh (Security)
+Current-state / policy
+What AI tools are currently approved, limited, or not allowed at PCORI?
+Are there existing security or acceptable-use policies that already apply to AI or Copilot usage?
+Are there any current concerns with GenAI, Copilot, or Azure AI from a security standpoint?
+Data / access / protection
+What types of data should never be entered into AI tools?
+Are there different rules for public models versus Microsoft / enterprise-controlled environments?
+What are the expectations around identity, access control, and permissions for AI solutions?
+What logging, monitoring, and auditability requirements should AI tools meet?
+Risk / review / governance
+What security review should be required before piloting a new AI use case?
+What conditions would need to be met before scaling an AI use case broadly?
+What are the top security risks you want built into the intake and triage process?
+Should certain categories of use cases automatically trigger a deeper review?
+What incident or escalation process should exist if AI is used improperly?
+Prioritization / operating model
+What security criteria should be part of the scoring or prioritization model?
+How do you want Security engaged: advisory, approval, or both?
+What is the most efficient review model that still keeps the program safe?
+Questions for Sri V (Data)
+Current-state / landscape
+What are the most important data sources or repositories that could support AI use cases?
+Which of those are trusted and ready enough to use now?
+Where are the biggest data quality or consistency issues today?
+Are there major metadata, catalog, lineage, or ownership gaps we should know about?
+Governance / access / readiness
+Who owns the key data domains we would likely need for AI initiatives?
+What approvals are needed to use enterprise data for AI-supported workflows?
+Are there restrictions on how structured or unstructured data can be used?
+What are the biggest data readiness barriers that could slow AI adoption?
+Use cases / value
+Which data-related AI use cases do you think would have the highest value for PCORI?
+Where do teams struggle most today with finding, summarizing, or using information?
+Are there existing reporting or analytics pain points where AI could help quickly?
+What would be the best first data-enabled use cases to pilot?
+Governance / prioritization
+What data criteria should be included in the intake and triage process?
+How should we assess data readiness for a proposed use case?
+What data-related risks should automatically flag a use case for deeper review?
+What should “good enough” data readiness look like for a pilot versus enterprise rollout?
