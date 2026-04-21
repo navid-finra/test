@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PCORI — AI Review Board (AIRB) Process</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #0d1f3c;
+  --navy-mid: #162d52;
+  --navy-light: #1e3f70;
+  --accent: #2d7dd2;
+  --accent-light: #4a9ede;
+  --teal: #0f9b8e;
+  --teal-light: #e0f5f3;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --green: #059669;
+  --green-light: #ecfdf5;
+  --blue-light: #eff6ff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --border: #e2e8f0;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--gray-50);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+.site-header {
+  background: var(--navy);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 0 rgba(255,255,255,.08);
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo {
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.header-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+.header-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+  margin-top: 1px;
+}
+.header-meta {
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 56px 32px 48px;
+  color: #fff;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; }
+.hero-eyebrow {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1.5px;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-heading {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  max-width: 640px;
+}
+.hero-desc {
+  font-size: 16px;
+  color: rgba(255,255,255,.65);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.hero-stat-val {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent-light);
+  line-height: 1;
+  font-family: 'DM Mono', monospace;
+}
+.hero-stat-label {
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+  margin-top: 4px;
+}
+
+/* ── Nav tabs ── */
+.nav-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 64px;
+  z-index: 90;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.nav-tab {
+  padding: 16px 20px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+  transition: all .15s;
+  user-select: none;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.nav-tab:hover { color: var(--accent); }
+.nav-tab.active { color: var(--navy); border-bottom-color: var(--accent); }
+
+/* ── Main layout ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Section typography ── */
+.sec-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.sec-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 680px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* ── Cards ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 5px;
+  letter-spacing: -0.2px;
+}
+.card-body {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ── Grids ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 720px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-right: 4px;
+}
+.b-blue { background: var(--blue-light); color: var(--accent); }
+.b-green { background: var(--green-light); color: var(--green); }
+.b-amber { background: var(--amber-light); color: var(--amber); }
+.b-red { background: var(--red-light); color: var(--red); }
+.b-gray { background: var(--gray-100); color: var(--gray-600); }
+.b-teal { background: var(--teal-light); color: var(--teal); }
+.b-navy { background: var(--navy); color: #fff; }
+
+/* ── Flow steps ── */
+.flow-wrap { position: relative; }
+.flow-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 0;
+  position: relative;
+}
+.flow-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 44px;
+  bottom: -24px;
+  width: 1px;
+  background: var(--border);
+}
+.step-bubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  font-family: 'DM Mono', monospace;
+}
+.step-body { flex: 1; padding-bottom: 28px; }
+.step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+.step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+/* ── Info box ── */
+.info-box {
+  background: var(--blue-light);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.info-box-title { font-size: 13px; font-weight: 600; color: #1e40af; margin-bottom: 4px; }
+.info-box-body { font-size: 13px; color: #1e40af; line-height: 1.6; }
+.warn-box {
+  background: var(--amber-light);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.warn-box-title { font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 4px; }
+.warn-box-body { font-size: 13px; color: #92400e; line-height: 1.6; }
+
+/* ── Intake form ── */
+.form-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section-num {
+  width: 22px;
+  height: 22px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+}
+.form-field { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 5px;
+  letter-spacing: -0.1px;
+}
+.form-hint { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--gray-50);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color .15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.radio-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.radio-opt {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: var(--gray-50);
+}
+.radio-opt:hover { border-color: var(--accent); background: var(--blue-light); }
+.radio-opt input { margin-top: 3px; flex-shrink: 0; accent-color: var(--accent); }
+.radio-opt-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.radio-opt-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.check-group { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.check-opt {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--gray-50);
+  transition: border-color .15s;
+}
+.check-opt:hover { border-color: var(--accent); }
+.check-opt input { accent-color: var(--accent); }
+.check-opt-label { font-size: 13px; color: var(--text); }
+
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .form-grid-2 { grid-template-columns: 1fr; } }
+.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+/* ── Agent steps ── */
+.agent-step {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid;
+  background: var(--gray-50);
+}
+.agent-step.auto { border-color: var(--accent); }
+.agent-step.human { border-color: var(--amber); }
+.agent-step.gate { border-color: var(--green); }
+.agent-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-family: 'DM Mono', monospace;
+}
+.auto .agent-label { color: var(--accent); }
+.human .agent-label { color: var(--amber); }
+.gate .agent-label { color: var(--green); }
+.agent-desc { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+/* ── Board members ── */
+.member-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.member-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.member-card.chair::before { background: var(--accent); }
+.member-card.standing::before { background: var(--teal); }
+.member-card.rotating::before { background: var(--amber); }
+.member-role { font-size: 14px; font-weight: 600; color: var(--navy); margin: 8px 0 2px; letter-spacing: -0.2px; }
+.member-who { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.member-scope { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Rules ── */
+.rule-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rule-row:last-child { border-bottom: none; }
+.rule-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ri-red { background: var(--red-light); color: var(--red); }
+.ri-amber { background: var(--amber-light); color: var(--amber); }
+.ri-green { background: var(--green-light); color: var(--green); }
+.rule-label { font-size: 13.5px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.rule-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Outcomes ── */
+.outcome-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.outcome-row:last-child { border-bottom: none; }
+.outcome-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── SLA table ── */
+.sla-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sla-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--border);
+}
+.sla-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.sla-table tr:last-child td { border-bottom: none; }
+.sla-table td:first-child { font-weight: 600; color: var(--navy); width: 220px; }
+.sla-table td:nth-child(2) { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); width: 130px; }
+
+/* ── Divider with label ── */
+.labeled-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+.labeled-divider span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-family: 'DM Mono', monospace;
+}
+.labeled-divider::before, .labeled-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Print / footer ── */
+.footer {
+  background: var(--navy);
+  color: rgba(255,255,255,.45);
+  text-align: center;
+  padding: 24px 32px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.3px;
+}
+
+/* ── Util ── */
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">AI</div>
+      <div>
+        <div class="header-title">PCORI — AI Review Board</div>
+        <div class="header-sub">Automated AIRB Process Design &amp; Governance Framework</div>
+      </div>
+    </div>
+    <div class="header-meta">Bravent LLC · March 2026</div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Section 3.1 — Governance-to-Execution Bridge</div>
+    <h1 class="hero-heading">AI Initiative Review Board (AIRB) Process</h1>
+    <p class="hero-desc">A lightweight, agentic AI-assisted review process sized for PCORI's scale — structured, transparent, and patient-centered at its core.</p>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val">10</div>
+        <div class="hero-stat-label">Business days to decision</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">5</div>
+        <div class="hero-stat-label">Board members</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">7</div>
+        <div class="hero-stat-label">Automated checks</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">3–8</div>
+        <div class="hero-stat-label">Est. requests per quarter</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Nav -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="showTab('overview')">Process Overview</button>
+    <button class="nav-tab" onclick="showTab('intake')">Intake Form</button>
+    <button class="nav-tab" onclick="showTab('agentic')">Agentic Review Engine</button>
+    <button class="nav-tab" onclick="showTab('board')">Board Composition</button>
+    <button class="nav-tab" onclick="showTab('rules')">Decision Rules</button>
+    <button class="nav-tab" onclick="showTab('outcomes')">Outcomes &amp; SLAs</button>
+    <button class="nav-tab" onclick="showTab('execution')">Execution &amp; Tracking</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- ── OVERVIEW ── -->
+  <section id="tab-overview" class="panel active">
+    <h2 class="sec-title">End-to-end AIRB process for PCORI</h2>
+    <p class="sec-desc">A six-stage structured review lifecycle with an agentic AI agent handling pre-screening so the human board focuses only on cases that need real deliberation. No standing meetings required for standard cases.</p>
+
+    <div class="flow-wrap">
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--blue-light);color:var(--accent);">1</div>
+        <div class="step-body">
+          <div class="step-title">Submission — Staff submits intake form</div>
+          <div class="step-desc">Any PCORI staff member submits the AI Initiative Intake Form via a web portal (Microsoft Forms / SharePoint). Submission triggers an automated acknowledgment email and opens a tracked case in the AI pipeline dashboard within 1 hour.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--blue-light);color:var(--accent);">2</div>
+        <div class="step-body">
+          <div class="step-title">Agentic Pre-Screen — AI agent runs 7 automated checks</div>
+          <div class="step-desc">Within 24 hours, an AI agent validates the submission against PCORI's defined rule set: data sensitivity classification, patient privacy flags, vendor risk lookup, funding influence detection, bias risk assessment, mission alignment scoring, and human-in-the-loop verification. Agent produces a Pre-Screen Report with a composite risk rating and routing recommendation.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--amber-light);color:var(--amber);">3</div>
+        <div class="step-body">
+          <div class="step-title">Triage Gate — CIO reviews pre-screen report (2 business days)</div>
+          <div class="step-desc">The CIO (or designee) reviews the agent's Pre-Screen Report and routes the case: Auto-Approve (low risk, all fast-track conditions met), Standard Board Review (medium risk), Full Board + Legal Review (high risk), or Return to Submitter for clarification.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--amber-light);color:var(--amber);">4</div>
+        <div class="step-body">
+          <div class="step-title">Board Review — AIRB members deliberate asynchronously (5 business days)</div>
+          <div class="step-desc">Board members receive the Pre-Screen Report and intake form via email/Teams. Each member submits their review assessment using a structured scoring template covering mission alignment, data risk, bias risk, and implementation feasibility. No standing meeting required for standard cases — async review only. High Risk cases require a live session.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--green-light);color:var(--green);">5</div>
+        <div class="step-body">
+          <div class="step-title">Decision — Agent aggregates scores, CIO ratifies, decision letter issued</div>
+          <div class="step-desc">The AI agent aggregates board member scores, applies weighted voting rules, and produces a decision recommendation (Approve / Approve with Conditions / Return for Clarification / Reject). The CIO ratifies the recommendation. A formal decision letter is sent to the submitter within 10 business days of original submission.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-bubble" style="background:var(--green-light);color:var(--green);">6</div>
+        <div class="step-body" style="padding-bottom:0;">
+          <div class="step-title">Monitoring — AI agent tracks post-approval compliance (ongoing)</div>
+          <div class="step-desc">For approved initiatives, the agent sends quarterly check-in prompts to the initiative owner, tracks disclosure registration compliance, and flags any scope drift for board review. Annual re-certification required for all active AI tools. Incidents trigger immediate escalation to board chair and CIO.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="labeled-divider"><span>Key metrics</span></div>
+    <div class="grid-3">
+      <div class="card"><div class="card-title">Target cycle time</div><div class="card-body">10 business days from submission to decision for standard reviews. 3 days for expedited low-risk cases that meet all fast-track conditions.</div></div>
+      <div class="card"><div class="card-title">Expected volume</div><div class="card-body">Estimated 3–8 AI initiative requests per quarter at PCORI's organizational scale. Process is deliberately low-overhead to match this volume.</div></div>
+      <div class="card"><div class="card-title">Human touchpoints</div><div class="card-body">CIO triage gate (2 days) plus async board scoring (5 days). No standing meetings required unless a High Risk case requires live deliberation.</div></div>
+    </div>
+  </section>
+
+  <!-- ── INTAKE FORM ── -->
+  <section id="tab-intake" class="panel">
+    <h2 class="sec-title">AI Initiative Intake Form</h2>
+    <p class="sec-desc">Submitted by any PCORI staff member proposing a new AI tool, workflow, or use case. Estimated completion time: 15–20 minutes. All fields marked with a required indicator must be completed before the agent can begin pre-screening.</p>
+
+    <div class="info-box">
+      <div class="info-box-title">What happens after you submit</div>
+      <div class="info-box-body">You will receive an automated acknowledgment with a case number within 1 hour. The AI agent will complete pre-screening within 24 business hours. The CIO will triage within 2 business days. You can expect a final decision within 10 business days. If the agent flags missing information, you will receive a clarification request within 48 hours — the review clock pauses until you respond.</div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="card mb-4">
+      <div class="form-section-title"><div class="form-section-num">1</div> Submitter &amp; Initiative Basics</div>
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label class="form-label">Submitter name &amp; title *</label>
+          <input class="form-input" type="text" placeholder="e.g. Jane Smith, Program Officer" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Submitter email *</label>
+          <input class="form-input" type="email" placeholder="jsmith@pcori.org" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Division / Department *</label>
+        <select class="form-select">
+          <option value="">Select your division</option>
+          <option>Research Programs</option>
+          <option>Program Operations</option>
+          <option>Engagement &amp; Dissemination</option>
+          <option>IT / Digital</option>
+          <option>Finance &amp; Administration</option>
+          <option>Legal &amp; Compliance</option>
+          <option>Executive Office</option>
+        </select>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label class="form-label">Initiative / Tool name *</label>
+          <input class="form-input" type="text" placeholder="e.g. Microsoft Copilot for grant review drafting" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Proposed start date *</label>
+          <input class="form-input" type="date" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Designated initiative owner (accountable post-approval) *</label>
+        <input class="form-input" type="text" placeholder="Name and title of the person responsible for ongoing compliance" />
+        <div class="form-hint">This person will receive quarterly check-in requests from the AI agent and is accountable for disclosure registration and annual re-certification.</div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="card mb-4">
+      <div class="form-section-title"><div class="form-section-num">2</div> Use Case Description</div>
+      <div class="form-field">
+        <label class="form-label">What problem or opportunity does this AI initiative address? *</label>
+        <textarea class="form-textarea" placeholder="Describe the business problem or opportunity in 2–4 sentences. Be specific about the current pain point and how AI is expected to address it."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">How will the AI be used? Describe the end-to-end workflow. *</label>
+        <textarea class="form-textarea" placeholder="e.g. Staff will use Copilot to draft initial summaries of applicant portfolios. These summaries are reviewed and edited by a human program officer before any decision is made. The AI output is never shared externally without human review."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Who will use this AI tool? *</label>
+        <div class="radio-group">
+          <label class="radio-opt">
+            <input type="radio" name="user_scope" />
+            <div>
+              <div class="radio-opt-label">Individual user (single staff member)</div>
+              <div class="radio-opt-sub">Low risk indicator — may qualify for fast-track review</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="user_scope" />
+            <div>
+              <div class="radio-opt-label">Team / Division (5–20 users)</div>
+              <div class="radio-opt-sub">Standard board review</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="user_scope" />
+            <div>
+              <div class="radio-opt-label">Enterprise-wide (all PCORI staff)</div>
+              <div class="radio-opt-sub">Full board review required — broad organizational risk exposure</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="user_scope" />
+            <div>
+              <div class="radio-opt-label">External (grantees, research partners, or public)</div>
+              <div class="radio-opt-sub">High risk indicator — full board review with patient/stakeholder advocate invited</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Is a human making the final decision in this workflow? *</label>
+        <div class="radio-group">
+          <label class="radio-opt">
+            <input type="radio" name="human_loop" />
+            <div>
+              <div class="radio-opt-label">Yes — AI assists, human reviews and decides</div>
+              <div class="radio-opt-sub">Required condition for fast-track approval eligibility</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="human_loop" />
+            <div>
+              <div class="radio-opt-label">Partially — AI makes a recommendation, human can override</div>
+              <div class="radio-opt-sub">Enhanced review required; override mechanism must be documented</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="human_loop" />
+            <div>
+              <div class="radio-opt-label">No — AI makes automated decisions without human review</div>
+              <div class="radio-opt-sub">High risk trigger — mandatory full board review; auto-reject if decisions affect funding</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">How does this initiative align with PCORI's mission and National Priorities for Health? *</label>
+        <textarea class="form-textarea" placeholder="Reference specific PCORI National Priorities for Health if applicable. Describe how this AI use supports PCORI's patient-centered research mission or operational excellence goals."></textarea>
+        <div class="form-hint">The AI agent scores this field against PCORI's five National Priorities for Health. Scores below 3/10 trigger a clarification request.</div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="card mb-4">
+      <div class="form-section-title"><div class="form-section-num">3</div> Data &amp; Privacy</div>
+      <div class="form-field">
+        <label class="form-label">What data will this AI tool access or process? (Select all that apply) *</label>
+        <div class="check-group">
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">Internal PCORI operational data (emails, documents, calendars, meeting notes)</span></label>
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">Grant applications or funded research data</span></label>
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">Patient health data or protected health information (PHI)</span></label>
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">PCORnet or partner network research data</span></label>
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">Personally identifiable information (PII) of staff, grantees, or applicants</span></label>
+          <label class="check-opt"><input type="checkbox" /><span class="check-opt-label">Publicly available data only — no sensitive information involved</span></label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Will data leave PCORI's environment (e.g. sent to a vendor's cloud)? *</label>
+        <div class="radio-group">
+          <label class="radio-opt">
+            <input type="radio" name="data_leave" />
+            <div>
+              <div class="radio-opt-label">No — fully on-premises or within PCORI's Microsoft tenant</div>
+              <div class="radio-opt-sub">Low data risk indicator</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="data_leave" />
+            <div>
+              <div class="radio-opt-label">Yes — data will be processed by a third-party vendor</div>
+              <div class="radio-opt-sub">Vendor due diligence required; vendor BAA needed if any PHI involved</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="data_leave" />
+            <div>
+              <div class="radio-opt-label">Unknown at this stage</div>
+              <div class="radio-opt-sub">Agent will flag for IT Security clarification before review proceeds</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Has a Data Protection / Privacy Impact Assessment been completed?</label>
+        <select class="form-select">
+          <option value="">Select status</option>
+          <option>Not started</option>
+          <option>In progress</option>
+          <option>Completed — findings will be attached</option>
+          <option>Not required — no personal data involved</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="card mb-4">
+      <div class="form-section-title"><div class="form-section-num">4</div> Vendor &amp; Technology</div>
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label class="form-label">AI tool / vendor name *</label>
+          <input class="form-input" type="text" placeholder="e.g. Microsoft Copilot, OpenAI API, custom internal model" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Is this tool already in use at PCORI?</label>
+          <select class="form-select">
+            <option value="">Select</option>
+            <option>No — net new tool</option>
+            <option>Yes — expanding an existing approved use case</option>
+            <option>Yes — but for a different use case than what was approved</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Is this vendor-supplied or internally built? *</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="vendor_type" /><div><div class="radio-opt-label">Vendor-supplied commercial product</div></div></label>
+          <label class="radio-opt"><input type="radio" name="vendor_type" /><div><div class="radio-opt-label">Internally built by PCORI IT team</div></div></label>
+          <label class="radio-opt"><input type="radio" name="vendor_type" /><div><div class="radio-opt-label">Contractor-built for PCORI under a service agreement</div></div></label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Does the vendor provide an AI transparency or model card document?</label>
+        <select class="form-select">
+          <option value="">Select</option>
+          <option>Yes — will attach to submission</option>
+          <option>No — vendor does not provide this</option>
+          <option>Unknown — will follow up</option>
+        </select>
+        <div class="form-hint">Model cards describe how the AI model was trained, its known limitations, and its intended use cases. If available, attach before submission.</div>
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="card mb-4">
+      <div class="form-section-title"><div class="form-section-num">5</div> Risk &amp; Funding Integrity</div>
+      <div class="form-field">
+        <label class="form-label">Could this AI tool affect PCORI funding decisions, grant review, or research priority-setting? *</label>
+        <div class="radio-group">
+          <label class="radio-opt">
+            <input type="radio" name="funding" />
+            <div>
+              <div class="radio-opt-label">No direct or indirect influence on funding or research decisions</div>
+              <div class="radio-opt-sub">Required for fast-track eligibility</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="funding" />
+            <div>
+              <div class="radio-opt-label">Indirectly — AI informs staff work that feeds into funding-adjacent processes</div>
+              <div class="radio-opt-sub">Enhanced review; General Counsel notified</div>
+            </div>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="funding" />
+            <div>
+              <div class="radio-opt-label">Directly — AI output feeds into grant review, award decisions, or priority-setting</div>
+              <div class="radio-opt-sub">High risk trigger — mandatory full board review with General Counsel as required participant</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Could outputs from this tool be biased against specific patient populations, disease areas, or research communities? *</label>
+        <textarea class="form-textarea" placeholder="Describe any known or potential bias risks. If applicable, describe planned mitigations (e.g. bias testing, diverse training data, human review of outputs). If none known, state so explicitly."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">What is your intended disclosure approach for AI use?</label>
+        <textarea class="form-textarea" rows="2" placeholder="e.g. AI use will be disclosed in all externally published materials. Staff will be notified of AI-assisted workflows. No external disclosure planned as this is internal only."></textarea>
+        <div class="form-hint">PCORI's AI disclosure standards require all approved AI tools to be registered in the public AI disclosure register within 30 days of approval.</div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-box-title">Before you submit</div>
+      <div class="warn-box-body">Ensure you have identified a designated initiative owner who will be accountable for ongoing compliance. Attach any relevant vendor documentation, privacy impact assessments, or model cards. Incomplete submissions will be returned by the AI agent within 24 hours — attaching supporting documents upfront prevents delays.</div>
+    </div>
+  </section>
+
+  <!-- ── AGENTIC REVIEW ENGINE ── -->
+  <section id="tab-agentic" class="panel">
+    <h2 class="sec-title">Agentic Review Engine</h2>
+    <p class="sec-desc">The AI agent runs a structured, rule-based pre-screening pass on every submission before it reaches the board. This reduces board burden and ensures consistent, bias-free application of PCORI's AI governance rules every time.</p>
+
+    <div class="info-box">
+      <div class="info-box-title">What the agent does — and what it does not do</div>
+      <div class="info-box-body">The agent applies defined rules, scores submissions, flags risks, and recommends routing. It does NOT make final decisions — all approvals require human ratification by the CIO or board. The agent is a structured triage tool, not a decision-maker. Its Pre-Screen Report is transparent and auditable.</div>
+    </div>
+
+    <h3 class="sec-title" style="font-size:16px;margin-bottom:16px">Automated checks performed — in sequence</h3>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 1 — Auto · Completeness check</div>
+      <div class="agent-desc">Verifies all required fields are populated and that no high-risk fields are marked "Unknown." If mandatory fields are empty or ambiguous, agent sends a clarification request to the submitter within 24 hours and pauses the review clock until resolved.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 2 — Auto · Data sensitivity classifier</div>
+      <div class="agent-desc">Classifies the data types involved using the submitter's responses. PHI selection triggers an immediate High Risk flag. PII of grantees or applicants triggers an Enhanced Review flag. Internal operational data only (no personal data) is classified as Low Risk. Classification is applied to all downstream routing logic.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 3 — Auto · Human-in-the-loop check</div>
+      <div class="agent-desc">If the submission indicates AI makes fully automated decisions with no human override capability, agent immediately flags as High Risk and escalates to mandatory full board review regardless of any other scores. There is no auto-approval path for fully automated AI decision-making at PCORI.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 4 — Auto · Mission alignment score</div>
+      <div class="agent-desc">Agent parses the mission alignment narrative and scores it 0–10 against PCORI's five National Priorities for Health using keyword and semantic matching. Scores below 3 trigger a clarification request. The score is included in the Pre-Screen Report and weighted in the composite risk rating.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 5 — Auto · Vendor risk lookup</div>
+      <div class="agent-desc">If a vendor is named, agent checks against PCORI's approved vendor registry. Known approved vendors (e.g. Microsoft within the existing M365 tenant) pass automatically. Unknown or unvetted vendors trigger a vendor due diligence flag, pausing the review until IT Security completes a vendor assessment.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 6 — Auto · Funding influence check</div>
+      <div class="agent-desc">If the submitter indicated any direct or indirect connection to PCORI funding decisions, grant review, priority-setting, or grantee outcomes, agent assigns a Funding Integrity Risk flag. This flag makes General Counsel participation mandatory in the board review phase.</div>
+    </div>
+
+    <div class="agent-step auto">
+      <div class="agent-label">Step 7 — Auto · Bias risk assessment</div>
+      <div class="agent-desc">Agent reviews the bias risk narrative field and cross-references it against the data types, intended user population, and workflow description. If the tool touches patient populations or research community data without explicit bias mitigation documentation, agent adds a Bias Review flag and recommends the AI Ethics / Bias Expert be invited as an ad hoc board member.</div>
+    </div>
+
+    <div class="agent-step gate">
+      <div class="agent-label">Final — Gate · Composite risk rating &amp; routing recommendation</div>
+      <div class="agent-desc">Agent computes a composite risk score (Low / Medium / High) from all seven checks and produces the Pre-Screen Report. The report includes: composite risk rating, all flags raised, recommended routing path (Auto-Approve / Standard Board Review / Full Board + Legal), suggested questions for board members to consider, and a summary of the submission for CIO triage.</div>
+    </div>
+
+    <div class="agent-step human">
+      <div class="agent-label">Handoff — Human · CIO triage gate (within 2 business days)</div>
+      <div class="agent-desc">The CIO receives the Pre-Screen Report and either ratifies the agent's routing recommendation or overrides it with documented justification. The CIO can fast-track a Low Risk case to auto-approval, escalate a Medium Risk case to full board review, or return the submission to the submitter for additional information.</div>
+    </div>
+
+    <div class="labeled-divider"><span>Post-approval monitoring (ongoing)</span></div>
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Quarterly check-in</div><div class="card-body">Agent sends a structured 5-question check-in to the designated initiative owner every 90 days. Responses are logged in the AI pipeline dashboard. Any indication of scope drift triggers a board notification and potential re-review.</div></div>
+      <div class="card"><div class="card-title">Annual re-certification</div><div class="card-body">All approved AI tools must complete re-certification annually. Agent generates a simplified re-review package pre-populated with prior approval data. Full board review is only required if scope, data access, or vendor has changed materially.</div></div>
+      <div class="card"><div class="card-title">Incident escalation</div><div class="card-body">If an AI-related incident is reported — bias complaint, data breach, unexpected harmful output, or media inquiry — the agent immediately escalates to the board chair and CIO for emergency review within 24 hours.</div></div>
+      <div class="card"><div class="card-title">Disclosure tracking</div><div class="card-body">Agent tracks whether approved tools have been added to PCORI's public AI disclosure register. Sends automated reminders at day 20 post-approval. Escalates to CIO if disclosure is not completed within the 30-day SLA.</div></div>
+    </div>
+  </section>
+
+  <!-- ── BOARD COMPOSITION ── -->
+  <section id="tab-board" class="panel">
+    <h2 class="sec-title">AIRB Board Composition</h2>
+    <p class="sec-desc">A lean 5-person standing board, sized for PCORI's scale and estimated request volume of 3–8 cases per quarter. Board reviews are primarily asynchronous — no standing monthly meeting is required unless a High Risk case requires live deliberation.</p>
+
+    <div class="grid-2 mb-4">
+      <div class="member-card chair">
+        <span class="badge b-navy">Chair</span>
+        <div class="member-role">CIO / Chief Information Officer</div>
+        <div class="member-who">PCORI's internal CIO</div>
+        <div class="member-scope">Holds the triage gate authority and final ratification authority for all decisions. Casts the deciding vote in tied cases. Serves as primary accountability holder for AI governance at PCORI. Chairs any live deliberation sessions required for High Risk cases. Receives the monthly AI pipeline dashboard.</div>
+      </div>
+      <div class="member-card standing">
+        <span class="badge b-teal">Standing Member</span>
+        <div class="member-role">General Counsel / Legal Representative</div>
+        <div class="member-who">PCORI's internal legal counsel</div>
+        <div class="member-scope">Reviews legal permissibility, vendor contract AI clauses, regulatory compliance (ACA, HIPAA where applicable), and conflict-of-interest implications. Required reviewer — non-optional — for any initiative touching funding decisions, grantee data, or external-facing AI outputs.</div>
+      </div>
+      <div class="member-card standing">
+        <span class="badge b-teal">Standing Member</span>
+        <div class="member-role">Chief Officer, Program Operations</div>
+        <div class="member-who">Carolyn Best, Ph.D. (or designee)</div>
+        <div class="member-scope">Evaluates mission alignment with PCORI's five National Priorities for Health and operational impact on program delivery. Assesses whether AI use in research-adjacent workflows is consistent with PCORI's patient-centered research standards, stakeholder commitments, and Board-level transparency expectations.</div>
+      </div>
+      <div class="member-card standing">
+        <span class="badge b-teal">Standing Member</span>
+        <div class="member-role">IT Security / Privacy Officer</div>
+        <div class="member-who">PCORI's IT Security lead</div>
+        <div class="member-scope">Reviews data security architecture, vendor data handling agreements, encryption standards, and access control design. Assesses data residency and sovereignty risks. Required reviewer — non-optional — for any tool that sends data outside PCORI's Microsoft 365 tenant or processes PHI or PII.</div>
+      </div>
+      <div class="member-card rotating" style="grid-column: span 2;">
+        <span class="badge b-amber">Rotating Member — 12-month term</span>
+        <div class="member-role">Division Director (rotating annually)</div>
+        <div class="member-who">Rotates across PCORI's divisions on a 12-month appointment cycle</div>
+        <div class="member-scope">Provides the operational end-user perspective and ensures AI governance decisions are grounded in practical PCORI workflows. The rotating seat structure ensures all PCORI divisions eventually have direct AIRB experience, building enterprise-wide AI governance literacy and cross-divisional buy-in over time.</div>
+      </div>
+    </div>
+
+    <div class="labeled-divider"><span>Ad hoc subject matter experts — non-voting, invited as needed</span></div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Patient / Stakeholder Advocate</div>
+        <div class="card-body">Invited for any initiative that could affect PCORI's research community, patient populations, or public-facing outputs. Directly aligned with PCORI's foundational patient-engagement philosophy and its Congressional mandate.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI Ethics / Bias Expert</div>
+        <div class="card-body">Invited for High Risk cases involving patient data, research-adjacent decisions, or known algorithmic bias risk in the AI model. Can be drawn from PCORI's existing research grant network or external advisory relationships.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Bravent Senior AI Advisor</div>
+        <div class="card-body">The Senior AI Strategy &amp; Implementation Advisor quality-reviews the agent's Pre-Screen Report before CIO triage and provides technical AI governance expertise as a non-voting resource for board deliberations.</div>
+      </div>
+    </div>
+
+    <div class="labeled-divider"><span>Voting rules</span></div>
+    <div class="info-box">
+      <div class="info-box-title">Quorum, majority, and dissent documentation</div>
+      <div class="info-box-body">Standard cases require 3 of 5 board members to submit scores (quorum). Decisions are majority-based (3+ votes). High Risk cases require all 5 members plus a live synchronous session before scoring. The CIO holds a tie-breaking vote in 2-2 split decisions. Dissenting opinions are documented in the official decision record — consistent with best practice for transparent, accountable AI governance and PCORI's open governance culture.</div>
+    </div>
+  </section>
+
+  <!-- ── DECISION RULES ── -->
+  <section id="tab-rules" class="panel">
+    <h2 class="sec-title">Decision Rules — AIRB Ruleset</h2>
+    <p class="sec-desc">These rules are hardcoded into the agentic review engine and applied consistently to every submission. The ruleset is reviewed annually by the full board and updated as PCORI's AI maturity and regulatory landscape evolves.</p>
+
+    <h3 class="sec-title" style="font-size:15px;margin-bottom:4px">Auto-reject triggers</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">No board review pathway exists for submissions that meet any of these conditions.</p>
+    <div class="card mb-4">
+      <div class="rule-row">
+        <div class="rule-icon ri-red">✕</div>
+        <div>
+          <div class="rule-label">Fully automated decisions affecting funding or research outcomes</div>
+          <div class="rule-desc">Any AI system that makes autonomous funding award, denial, or research priority decisions without human oversight is automatically rejected. PCORI's Congressional mandate and mission integrity require human accountability for all consequential decisions related to research funding.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-red">✕</div>
+        <div>
+          <div class="rule-label">PHI processed by a vendor without a HIPAA BAA</div>
+          <div class="rule-desc">Any initiative that sends protected health information to a vendor that has not executed a HIPAA Business Associate Agreement (BAA) with PCORI is automatically rejected. No exceptions. The BAA must be in place before any submission involving PHI can be accepted for review.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-red">✕</div>
+        <div>
+          <div class="rule-label">No designated human initiative owner</div>
+          <div class="rule-desc">Every approved AI initiative must have a named, accountable human owner responsible for ongoing compliance, quarterly check-ins, annual re-certification, and disclosure registration. Submissions without a designated owner are returned to the submitter before any agent pre-screening begins.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sec-title" style="font-size:15px;margin-bottom:4px">High Risk triggers</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Mandatory full board review plus live synchronous session required. Cannot be fast-tracked.</p>
+    <div class="card mb-4">
+      <div class="rule-row">
+        <div class="rule-icon ri-amber">!</div>
+        <div>
+          <div class="rule-label">Patient or grantee data involved</div>
+          <div class="rule-desc">Any AI tool that accesses, processes, or generates outputs based on patient health data, PCORnet research data, or individual grantee personal information triggers a mandatory full board review. The Patient/Stakeholder Advocate is invited as an ad hoc non-voting member.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-amber">!</div>
+        <div>
+          <div class="rule-label">Enterprise-wide or external-facing deployment</div>
+          <div class="rule-desc">Any initiative intended for all PCORI staff, or for external stakeholders including grantees, research partners, or the public, triggers a mandatory full board review due to the broad organizational risk exposure and potential reputational implications for PCORI's mission.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-amber">!</div>
+        <div>
+          <div class="rule-label">Direct or indirect influence on funding or research decisions</div>
+          <div class="rule-desc">Any AI tool with direct or indirect influence on PCORI grant review, priority-setting, award decisions, or grantee outcome assessments triggers a mandatory full board review. General Counsel's participation is required and non-optional in this scenario.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-amber">!</div>
+        <div>
+          <div class="rule-label">Unknown, unapproved, or unvetted vendor</div>
+          <div class="rule-desc">Any vendor not on PCORI's approved technology vendor list triggers an IT Security vendor due diligence requirement before board review can begin. The review clock pauses until vendor assessment is completed and a risk determination is issued by the IT Security Officer.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sec-title" style="font-size:15px;margin-bottom:4px">Fast-track / auto-approval conditions</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">All five conditions must be true simultaneously for a submission to qualify for CIO fast-track approval without full board review.</p>
+    <div class="card">
+      <div class="rule-row">
+        <div class="rule-icon ri-green">✓</div>
+        <div>
+          <div class="rule-label">Approved vendor operating within PCORI's existing Microsoft tenant</div>
+          <div class="rule-desc">Tool is a known Microsoft product — Copilot, Azure OpenAI, Power Automate — operating fully within PCORI's existing Microsoft 365 tenant with no new external data connections or integrations.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-green">✓</div>
+        <div>
+          <div class="rule-label">Internal PCORI operational data only — no PHI, PII, or sensitive research data</div>
+          <div class="rule-desc">The tool only accesses PCORI's own internal operational content: staff documents, emails, meeting notes, or calendar data. No patient data, grantee personal data, sensitive research data, or PCORnet data is involved.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-green">✓</div>
+        <div>
+          <div class="rule-label">Human makes all final decisions — AI is purely assistive</div>
+          <div class="rule-desc">AI is used exclusively as a drafting, summarizing, or productivity assistance tool. All AI outputs are reviewed and approved by a human before any action, communication, or decision is taken. No AI output is acted upon without human review.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-green">✓</div>
+        <div>
+          <div class="rule-label">Individual or team-level deployment only — no enterprise or external rollout</div>
+          <div class="rule-desc">Use is scoped to a single staff member or a specific internal team. No enterprise-wide deployment and no external-facing use is planned in the current scope of the submission.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon ri-green">✓</div>
+        <div>
+          <div class="rule-label">No connection to funding decisions, research outcomes, or grantee assessments</div>
+          <div class="rule-desc">The tool has no direct or indirect connection to PCORI's grant review processes, research priority-setting, award decisions, or any outputs that could influence grantee relationships or research community assessments.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── OUTCOMES & SLAs ── -->
+  <section id="tab-outcomes" class="panel">
+    <h2 class="sec-title">Decision Outcomes &amp; SLAs</h2>
+    <p class="sec-desc">Every AIRB review results in one of four formal outcomes. SLAs are tracked by the AI pipeline dashboard and reported monthly to the CIO and quarterly to PCORI's leadership team.</p>
+
+    <div class="card mb-4">
+      <div class="outcome-row">
+        <span class="badge b-green" style="min-width:160px;text-align:center">Approved</span>
+        <div class="outcome-text">Initiative may proceed as submitted. Disclosure registration in PCORI's public AI register required within 30 days. Quarterly monitoring check-ins begin immediately. Annual re-certification date is set at approval.</div>
+      </div>
+      <div class="outcome-row">
+        <span class="badge b-blue" style="min-width:160px;text-align:center">Approved with Conditions</span>
+        <div class="outcome-text">Initiative may proceed only after specified conditions are met. Examples: vendor BAA must be executed, bias mitigation plan must be documented, scope must be limited to named teams only. Conditions are tracked by the agent with 30-day SLA per condition. Failure to satisfy conditions within 60 days results in automatic suspension.</div>
+      </div>
+      <div class="outcome-row">
+        <span class="badge b-amber" style="min-width:160px;text-align:center">Returned for Clarification</span>
+        <div class="outcome-text">Submission requires additional information before review can proceed. The review clock pauses. Submitter has 10 business days to provide the requested information before the case is closed. Re-submission opens a new case at no penalty.</div>
+      </div>
+      <div class="outcome-row">
+        <span class="badge b-red" style="min-width:160px;text-align:center">Rejected</span>
+        <div class="outcome-text">Initiative does not meet PCORI's AI governance standards as currently designed. Decision letter includes the specific reasons for rejection and, where applicable, a clear description of what changes would be required for a future resubmission to be considered. Rejection reasons are tracked for policy improvement.</div>
+      </div>
+    </div>
+
+    <div class="labeled-divider"><span>Service level commitments</span></div>
+
+    <div class="card mb-4">
+      <table class="sla-table">
+        <thead>
+          <tr>
+            <th>Milestone</th>
+            <th>SLA</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Submission acknowledgment</td>
+            <td>1 hour</td>
+            <td>Automated acknowledgment email with case number sent within 1 hour of submission. Business hours only.</td>
+          </tr>
+          <tr>
+            <td>Agent Pre-Screen Report</td>
+            <td>24 hours</td>
+            <td>AI agent completes all seven automated checks and delivers Pre-Screen Report to CIO within one business day of submission.</td>
+          </tr>
+          <tr>
+            <td>Clarification request (if needed)</td>
+            <td>48 hours</td>
+            <td>If agent identifies missing or ambiguous information, clarification request is sent to submitter within 48 business hours. Review clock pauses.</td>
+          </tr>
+          <tr>
+            <td>CIO triage gate</td>
+            <td>2 business days</td>
+            <td>CIO reviews Pre-Screen Report and routes the case within 2 business days of receiving the report.</td>
+          </tr>
+          <tr>
+            <td>Standard board review</td>
+            <td>5 business days</td>
+            <td>All board members submit async scoring assessments within 5 business days of case being routed to board review.</td>
+          </tr>
+          <tr>
+            <td>Decision letter issued</td>
+            <td>10 business days</td>
+            <td>Formal decision letter sent to submitter within 10 business days of original submission for standard cases.</td>
+          </tr>
+          <tr>
+            <td>High Risk review</td>
+            <td>15–20 business days</td>
+            <td>Live board session scheduled within 15 business days. Complex cases may extend to 20 days with proactive notification to submitter.</td>
+          </tr>
+          <tr>
+            <td>Disclosure registration</td>
+            <td>30 days post-approval</td>
+            <td>Approved initiatives added to PCORI's public AI disclosure register. Agent sends reminder at day 20 and escalates to CIO if not completed by day 30.</td>
+          </tr>
+          <tr>
+            <td>Annual re-certification</td>
+            <td>12 months post-approval</td>
+            <td>Agent sends re-certification package 60 days before the anniversary date. Re-certification must be completed before the anniversary date or tool use is suspended.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="labeled-divider"><span>Monthly CIO reporting dashboard</span></div>
+    <div class="grid-3">
+      <div class="card"><div class="card-title">Pipeline snapshot</div><div class="card-body">All active cases by status: submitted, in pre-screen, awaiting CIO triage, in board review, pending decision, decided. Average cycle time vs SLA for the trailing 90 days.</div></div>
+      <div class="card"><div class="card-title">Decision outcomes</div><div class="card-body">Count by outcome type (Approved, Conditions, Returned, Rejected). Rejection reasons categorized and tracked to inform future policy updates. Conditions compliance rate.</div></div>
+      <div class="card"><div class="card-title">Active AI inventory</div><div class="card-body">All approved and active AI initiatives with designated owner, approval date, last quarterly check-in status, next check-in due date, and annual re-certification due date.</div></div>
+    </div>
+  </section>
+
+
+  <!-- ── EXECUTION & TRACKING ── -->
+  <section id="tab-execution" class="panel">
+    <h2 class="sec-title">Governance → Execution Bridge</h2>
+    <p class="sec-desc">Every AIRB decision is converted into a structured execution plan with defined ownership, timelines, and measurable outcomes. This ensures governance is not just advisory — it directly drives operational delivery and accountability across PCORI. This layer is the core of Section 3.1.</p>
+
+    <div class="info-box">
+      <div class="info-box-title">Why this layer exists</div>
+      <div class="info-box-body">Most AI governance processes stop at approval. PCORI's AIRB goes further: every decision — approve, approve with conditions, or reject — produces a structured execution record that the CIO can track, report on, and hold teams accountable to. Governance without execution follow-through is just paperwork.</div>
+    </div>
+
+    <!-- PRIORITIZATION MATRIX -->
+    <div class="labeled-divider"><span>AI Initiative Prioritization Matrix</span></div>
+    <p class="sec-desc" style="margin-top:-12px">All submitted initiatives are scored across five dimensions to ensure consistent, defensible prioritization across the AI portfolio. The composite score determines pipeline sequencing and resource allocation.</p>
+
+    <div class="card mb-4">
+      <div class="card-title" style="margin-bottom:14px">Scoring dimensions — each rated 1 (low) to 5 (high)</div>
+      <table class="sla-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Weight</th>
+            <th>What is measured</th>
+            <th>Low score (1–2)</th>
+            <th>High score (4–5)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Strategic Value</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">25%</td>
+            <td>Alignment with PCORI's mission and National Priorities for Health</td>
+            <td style="font-size:12px;color:var(--text-muted)">Tangential to PCORI mission</td>
+            <td style="font-size:12px;color:var(--text-muted)">Directly advances a named National Priority</td>
+          </tr>
+          <tr>
+            <td>Patient / Research Impact</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">25%</td>
+            <td>Potential benefit to patient-centered research outcomes or grantee experience</td>
+            <td style="font-size:12px;color:var(--text-muted)">Internal efficiency only, no research impact</td>
+            <td style="font-size:12px;color:var(--text-muted)">Measurable improvement to research quality or patient outcomes</td>
+          </tr>
+          <tr>
+            <td>Feasibility</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">20%</td>
+            <td>Data readiness, technical complexity, staff capacity, and implementation effort</td>
+            <td style="font-size:12px;color:var(--text-muted)">Significant technical gaps or unready data</td>
+            <td style="font-size:12px;color:var(--text-muted)">Data ready, technology proven, staff capacity confirmed</td>
+          </tr>
+          <tr>
+            <td>Risk Level</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">20%</td>
+            <td>Privacy, bias, funding integrity, and regulatory exposure (inverse — lower risk = higher score)</td>
+            <td style="font-size:12px;color:var(--text-muted)">High risk — PHI, funding influence, unknown vendor</td>
+            <td style="font-size:12px;color:var(--text-muted)">Low risk — internal data, approved vendor, human oversight</td>
+          </tr>
+          <tr>
+            <td>Effort / Cost</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">10%</td>
+            <td>Required investment, licensing cost, and organizational change management lift</td>
+            <td style="font-size:12px;color:var(--text-muted)">High cost, significant change management required</td>
+            <td style="font-size:12px;color:var(--text-muted)">Minimal cost, leverages existing tools and contracts</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 12px;background:var(--gray-100);border-radius:var(--radius);font-size:12px;color:var(--text-muted)">
+        <strong style="color:var(--navy)">Composite score bands:</strong>&nbsp;&nbsp;
+        <span class="badge b-green">4.0–5.0 = High Priority — schedule immediately</span>&nbsp;
+        <span class="badge b-blue">2.5–3.9 = Medium Priority — queue within 90 days</span>&nbsp;
+        <span class="badge b-amber">1.0–2.4 = Low Priority — defer or return to submitter</span>
+      </div>
+    </div>
+
+    <!-- DECISION TRACKING MODEL -->
+    <div class="labeled-divider"><span>Governance Decision Tracking Model</span></div>
+    <p class="sec-desc" style="margin-top:-12px">Every AIRB decision — regardless of outcome — generates a permanent, auditable execution record. This record is the single source of truth for the CIO, board, and initiative owner.</p>
+
+    <div class="card mb-4">
+      <div class="card-title" style="margin-bottom:14px">Execution record structure — fields tracked per initiative</div>
+      <div class="grid-2">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-family:'DM Mono',monospace">Identity & Ownership</div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-green" style="font-size:11px">ID</div>
+            <div><div class="rule-label" style="font-size:13px">Case ID</div><div class="rule-desc">Unique identifier assigned at submission — used across all tracking systems</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-green" style="font-size:11px">👤</div>
+            <div><div class="rule-label" style="font-size:13px">Initiative Owner</div><div class="rule-desc">Named accountable lead responsible for execution, compliance, and reporting</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-green" style="font-size:11px">Div</div>
+            <div><div class="rule-label" style="font-size:13px">Division</div><div class="rule-desc">Submitting PCORI division — used for portfolio-level reporting by the CIO</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0;border-bottom:none">
+            <div class="rule-icon ri-green" style="font-size:11px">P</div>
+            <div><div class="rule-label" style="font-size:13px">Priority Score</div><div class="rule-desc">Composite prioritization matrix score — determines pipeline sequencing</div></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-family:'DM Mono',monospace">Decision & Execution</div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-amber" style="font-size:11px">✓</div>
+            <div><div class="rule-label" style="font-size:13px">AIRB Decision + Date</div><div class="rule-desc">Formal outcome with ratification date and board members who reviewed</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-amber" style="font-size:11px">⚑</div>
+            <div><div class="rule-label" style="font-size:13px">Approval Conditions</div><div class="rule-desc">Any conditions attached to approval with completion deadlines and status</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0">
+            <div class="rule-icon ri-amber" style="font-size:11px">→</div>
+            <div><div class="rule-label" style="font-size:13px">Milestones & Due Dates</div><div class="rule-desc">Assigned execution actions, responsible parties, and target completion dates</div></div>
+          </div>
+          <div class="rule-row" style="padding:8px 0;border-bottom:none">
+            <div class="rule-icon ri-amber" style="font-size:11px">↻</div>
+            <div><div class="rule-label" style="font-size:13px">Next Review Date</div><div class="rule-desc">Scheduled quarterly check-in or annual re-certification date</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXECUTION SCORECARD -->
+    <div class="labeled-divider"><span>AI Execution Scorecards — reported monthly to CIO</span></div>
+    <p class="sec-desc" style="margin-top:-12px">Four scorecard dimensions provide the CIO with a complete picture of portfolio health — covering delivery progress, compliance posture, business value, and program maturity.</p>
+
+    <div class="grid-2 mb-4">
+      <div class="card" style="border-top:3px solid var(--accent)">
+        <div class="card-title">Execution Progress</div>
+        <div class="card-body" style="margin-top:8px">
+          Tracks delivery status across the initiative lifecycle:
+          <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+            <li>Lifecycle stage: Planned → In Progress → Pilot → Scaled → Closed</li>
+            <li>Milestone completion rate vs planned schedule</li>
+            <li>Dependency and blocker tracking</li>
+            <li>Condition closure rate for approved-with-conditions cases</li>
+            <li>Overall on-track / at-risk / delayed status per initiative</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="border-top:3px solid var(--red)">
+        <div class="card-title">Risk &amp; Compliance Status</div>
+        <div class="card-body" style="margin-top:8px">
+          Ongoing governance visibility across all active initiatives:
+          <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+            <li>Privacy and data compliance status</li>
+            <li>Bias monitoring indicators and flag resolution</li>
+            <li>Disclosure registration completion vs 30-day SLA</li>
+            <li>Audit readiness rating</li>
+            <li>Open risk flags and remediation owner</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="border-top:3px solid var(--green)">
+        <div class="card-title">Business Impact Metrics</div>
+        <div class="card-body" style="margin-top:8px">
+          Measures whether approved initiatives are delivering stated value:
+          <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+            <li>Productivity gains vs baseline (e.g. time saved per workflow)</li>
+            <li>AI idea-to-decision cycle time reduction</li>
+            <li>Tool adoption rate by target user population</li>
+            <li>User satisfaction scores from quarterly check-ins</li>
+            <li>Copilot utilization analytics (active users, feature usage)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="border-top:3px solid var(--teal)">
+        <div class="card-title">Governance Health</div>
+        <div class="card-body" style="margin-top:8px">
+          Tracks AI program maturity and governance posture over time:
+          <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+            <li>% of active initiatives currently compliant with all conditions</li>
+            <li>Condition closure rate (approved-with-conditions cases)</li>
+            <li>Annual re-certification completion rate</li>
+            <li>Open risk flags across the portfolio</li>
+            <li>AI portfolio maturity score (quarterly assessment)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTING CADENCE -->
+    <div class="labeled-divider"><span>Reporting cadence — who sees what and when</span></div>
+    <div class="card mb-4">
+      <table class="sla-table">
+        <thead>
+          <tr><th>Report</th><th>Frequency</th><th>Audience</th><th>Contents</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Pipeline Snapshot</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">Weekly</td>
+            <td style="font-size:12px">CIO</td>
+            <td style="font-size:12px;color:var(--text-muted)">Active case statuses, SLA adherence, any flags requiring CIO action</td>
+          </tr>
+          <tr>
+            <td>Execution Scorecard</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">Monthly</td>
+            <td style="font-size:12px">CIO + Digital Directors</td>
+            <td style="font-size:12px;color:var(--text-muted)">All four scorecard dimensions, cycle-time metrics, conditions compliance</td>
+          </tr>
+          <tr>
+            <td>AI Portfolio Maturity Assessment</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">Quarterly</td>
+            <td style="font-size:12px">CIO + Leadership</td>
+            <td style="font-size:12px;color:var(--text-muted)">Portfolio health, maturity score trend, prioritization matrix review, strategic recommendations</td>
+          </tr>
+          <tr>
+            <td>Board-Level AI Briefing</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">Quarterly</td>
+            <td style="font-size:12px">PCORI Board of Governors</td>
+            <td style="font-size:12px;color:var(--text-muted)">Executive summary of AI portfolio, key decisions, business impact highlights, risk posture</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box mt-6">
+      <div class="info-box-title">The complete governance-to-execution chain</div>
+      <div class="info-box-body">Intake Form → Agentic Pre-Screen → CIO Triage → Board Review → Decision → Prioritization Score → Execution Record → Scorecard Tracking → CIO Dashboard → Board Briefing. Every step is traceable, every decision is auditable, and every approved initiative has a named owner accountable for delivery. This is how PCORI's AI governance moves from policy to organizational reality.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  PCORI — AI Review Board Process &nbsp;|&nbsp; Bravent LLC &nbsp;|&nbsp; Proprietary &amp; Confidential &nbsp;|&nbsp; March 2026
+</footer>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const tabs = ['overview','intake','agentic','board','rules','outcomes','execution'];
+  document.querySelectorAll('.nav-tab')[tabs.indexOf(id)].classList.add('active');
+  window.scrollTo({ top: 128, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
