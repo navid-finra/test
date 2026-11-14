@@ -1,0 +1,970 @@
+Development Specification: Dynamic Healthcare Plan Market Share Prediction and Optimization
+
+1. Objective
+
+Build a production-ready, Python-based dynamic market-share prediction system for healthcare insurance plans.
+
+The model must estimate how changes in plan features and market structure affect the distribution of eligible members among competing plans within each county.
+
+The model will ultimately be embedded in an optimizer that evaluates thousands of alternative benefit configurations.
+
+The most important requirement is exact baseline preservation:
+
+If no inputs or plan availability change, the model must reproduce the observed enrollment shares exactly, regardless of how accurately its underlying utility model predicts absolute shares.
+
+Do not develop a conventional model that simply predicts market shares from scratch during inference. Build a baseline-anchored, utility-based pivot system.
+
+Implement and compare three approaches:
+
+1. Baseline-Anchored Multinomial Logit (MNL)
+2. Baseline-Anchored Nested Logit
+3. Baseline-Anchored Neural Utility Model (DeepSets or another appropriate permutation-invariant architecture)
+
+All three should support the same scenario-inference interface.
+
+⸻
+
+2. Data Structure
+
+Historical data is organized at the county × year × plan level.
+
+Every county can have a different number of plans, and the plans available in the same county can change between years.
+
+Available plan features
+
+* food_benefit: numerical amount
+* utility_combos: combinations of utility-related benefits; handle according to the actual data representation
+* other_amounts: additional numerical benefit amounts, potentially multiple columns
+* organization: categorical organization/insurer
+* plan_type: categorical plan type
+
+Required identifiers and targets
+
+* county_id
+* year
+* plan_id
+* total_eligibles: county-year total eligible population
+* enrollment: observed plan enrollment, used as the training target and inference baseline
+
+If enrollment is supplied as a share rather than a count, support that format, but preserve the correct denominator.
+
+Make the data schema configurable. Do not assume additional features exist.
+
+Historical total eligibles and observed enrollment should be treated as different quantities.
+
+For each county-year:
+
+observed_share_i = enrollment_i / total_eligibles
+
+Outside option
+
+Because the denominator is total eligible members, not total enrolled members, include an explicit outside alternative representing eligible members not enrolled in the modeled plans.
+
+outside_enrollment = total_eligibles - sum(plan_enrollments)
+
+outside_share = outside_enrollment / total_eligibles
+
+The outside option should participate in model estimation and share normalization.
+
+Validate that enrollment totals do not exceed the eligible population. Flag inconsistent data rather than silently correcting it.
+
+If the data only covers a subset of healthcare plans, investigate whether the outside alternative actually represents both unmodeled plans and non-enrollment. Document this distinction.
+
+⸻
+
+3. Market Construction
+
+A market is defined as one county in one year.
+
+For each market:
+
+* Identify the available plans.
+* Calculate observed shares.
+* Add the outside option.
+* Encode organization and plan type.
+* Construct plan-benefit features.
+* Calculate total number of available plans.
+* Construct competitor-related features where appropriate.
+
+The model must accept a variable number of plans.
+
+Do not build an architecture requiring a fixed number of plans or a separate prediction output for each plan ID.
+
+For neural models, use a shared plan-scoring function with set aggregation or properly masked attention.
+
+Feature engineering
+
+For numerical benefits, consider:
+
+* Original numerical value
+* Appropriate scaling or log1p transformations
+* Nonlinear functions or splines
+* Interactions between food benefits and other benefit amounts
+
+For utility_combos, inspect its actual representation before choosing an encoding. Support numerical amounts, categorical combinations, or multi-hot benefit indicators as appropriate.
+
+For organization and plan type, use appropriate categorical encoding or embeddings.
+
+Plan ID is primarily used to track continuity between years. Avoid relying on a learned fixed effect for every plan ID, because the system must generalize to newly introduced plans.
+
+⸻
+
+4. Build Historical Market Transitions
+
+This is essential.
+
+The training data must contain both individual market snapshots and transitions between consecutive observations of the same county.
+
+For a county observed in year t and year t+1, define:
+
+Baseline market: Observed plans, benefits, and shares in year t.
+
+Target market: Observed plan availability and features in year t+1.
+
+Target labels: Actual enrollment shares in year t+1.
+
+Match plans using stable plan identities. Verify that identifiers represent genuine plan continuity rather than annual ID changes.
+
+Classify each plan:
+
+* Continuing: Present in both years.
+* Entering: Present in t+1, absent in t.
+* Exiting: Present in t, absent in t+1.
+
+If plan identity mappings are unreliable, create a validation process; do not treat every identifier change as a genuine market entry.
+
+Transitions should cover:
+
+1. Existing plans changing benefits
+2. New plans entering
+3. Existing plans exiting
+4. Multiple simultaneous entries and exits
+5. Changes in market composition
+6. Changes in total eligibles
+7. Changes in the outside-option share
+
+The model must learn how existing and newly introduced plans compete for enrollment.
+
+Do not simply assign each new plan an arbitrary percentage of the market.
+
+⸻
+
+5. Shared Utility Modeling Concept
+
+Each plan receives a predicted utility or attractiveness score:
+
+V_i = f(plan_features_i, county_context, market_context)
+
+Utility is a latent score used to calculate relative probabilities, not an independently observed measurement.
+
+Implement a shared utility function across plans.
+
+When comparing baseline and proposed scenarios, calculate:
+
+delta_V_i = V_i(scenario) - V_i(baseline)
+
+The utility function may incorporate competitive context, but it must be applied consistently to baseline and scenario markets.
+
+Use regularization and sensible constraints to discourage implausible responses. For instance, a larger beneficial allowance would generally be expected to increase the plan’s relative attractiveness, all else equal.
+
+However, do not assume every observed association represents a causal benefit effect.
+
+The utility model should be trained using historical enrollment outcomes, including transitions, rather than relying on manually specified benefit weights.
+
+⸻
+
+6. Model A: Baseline-Anchored Multinomial Logit
+
+Implement a trainable utility model with multinomial-logit probabilities.
+
+For a market with available plans and an outside option:
+
+P_i = exp(V_i) / sum_j exp(V_j)
+
+Use numerically stable softmax calculations.
+
+6.1 Training the absolute utility model
+
+Estimate model parameters from observed county-year enrollment counts or shares.
+
+Fit the relative attractiveness of:
+
+* Food benefit amounts
+* Utility combinations
+* Other benefit amounts
+* Organizations
+* Plan types
+
+Include an outside alternative and identify the utility scale relative to it, for example by fixing outside utility to zero where appropriate.
+
+The purpose of this level model is to learn a common utility scale, including one that can be applied to previously unseen plans.
+
+6.2 Pivot for continuing plans
+
+For a continuing plan:
+
+w_i = observed_baseline_share_i * exp(V_i_scenario - V_i_baseline)
+
+Thus, the model modifies the observed baseline rather than replacing it.
+
+If nothing changes:
+
+delta_V_i = 0
+
+and the unnormalized weight equals the observed baseline share.
+
+6.3 Pivot for new plans
+
+New plans have no observed baseline share.
+
+They cannot use the ordinary multiplicative-share pivot because multiplying zero by any finite value still gives zero.
+
+The system must instead estimate their initial weight from the learned absolute utility model.
+
+First compute the learned baseline-model partition:
+
+Z_base = sum_k exp(V_k_baseline)
+
+This includes every baseline plan and the outside alternative.
+
+For a new plan:
+
+w_new = exp(V_new_scenario + entry_adjustment) / Z_base
+
+Here, entry_adjustment is an optional learned parameter representing systematic differences between a newly launched plan and an otherwise comparable established plan.
+
+Learn it from historical plan-entry observations; do not hardcode an arbitrary entry percentage.
+
+This puts the entrant’s unnormalized weight on a scale comparable to the baseline market’s total weight of one.
+
+Important: Never simply use exp(V_new) alongside incumbent weights measured as observed shares. Those quantities have different scales unless properly calibrated.
+
+The absolute utility model and pivot-transition model should be trained together or sequentially with a combined objective so entry predictions remain calibrated.
+
+6.4 Pivot for exiting plans
+
+Remove exiting plans from the scenario choice set.
+
+Their scenario weights equal zero.
+
+Do not retain their baseline share in the denominator.
+
+6.5 Final market-share calculation
+
+For all available scenario alternatives:
+
+predicted_share_i = w_i / sum(w_all_available)
+
+This guarantees nonnegative shares and normalization.
+
+Include the outside alternative in normalization.
+
+For an unchanged outside option, its anchored weight is its observed baseline share. If its modeled utility changes, use the same utility-difference principle.
+
+6.6 Interpretation of exits
+
+In a standard multinomial-logit pivot, removing a plan redistributes its probability proportionally among surviving alternatives, unless modeled utility changes modify the other weights.
+
+This is a restrictive substitution assumption.
+
+Do not describe this result as learned plan-specific member migration.
+
+One motivation for experimenting with nested logit is to obtain more realistic substitution patterns.
+
+⸻
+
+7. Model B: Baseline-Anchored Nested Logit
+
+Implement a proper nested-logit choice model, not merely an MNL model with organization or plan-type categorical features.
+
+Test these structures independently:
+
+Experiment B1 — Organization nesting
+
+* First level: choose an organization
+* Second level: choose a plan within that organization
+
+Experiment B2 — Plan-type nesting
+
+* First level: choose a plan type
+* Second level: choose a plan within that type
+
+Keep the outside option as an explicit top-level singleton alternative.
+
+Do not mix overlapping organization and plan-type nests into one ordinary nested-logit tree. More elaborate cross-nested structures are outside the initial implementation scope.
+
+7.1 Standard nested-logit equations
+
+For plan i belonging to nest g:
+
+D_g = sum_{j in g} exp(V_j / lambda_g)
+
+P(i | g) = exp(V_i / lambda_g) / D_g
+
+P(g) = exp(A_g + lambda_g * log(D_g)) / Z_top
+
+where:
+
+Z_top = exp(V_outside) + sum_g exp(A_g + lambda_g * log(D_g))
+
+and:
+
+P(i) = P(g) * P(i | g)
+
+A_g represents an optional estimable nest-level utility term.
+
+The dissimilarity parameters must satisfy:
+
+0 < lambda_g <= 1
+
+Use a stable parameterization and regularization. Consider pooling or sharing parameters when insufficient observations exist for estimating a separate parameter for each nest.
+
+When lambda_g = 1, the within-nest substitution restriction approaches the multinomial-logit case under a consistent utility specification.
+
+7.2 Baseline-anchored nested pivot
+
+Do not simply re-run nested logit to obtain new absolute shares. That would break exact baseline preservation.
+
+Instead, anchor both:
+
+1. Baseline probability of choosing each nest
+2. Baseline conditional probability of choosing each plan within its nest
+
+For each baseline nest g:
+
+S_g_base = sum_{i in g} observed_baseline_share_i
+
+For each plan in that nest:
+
+q_i_base = observed_baseline_share_i / S_g_base
+
+For continuing plans that remain in the same nest:
+
+r_i = q_i_base * exp((V_i_scenario - V_i_baseline) / lambda_g)
+
+For a new plan entering an existing nest:
+
+r_new = exp((V_new_scenario + entry_adjustment) / lambda_g) / D_g_base
+
+where D_g_base is computed from the learned absolute utility model over plans in that baseline nest.
+
+For exited plans:
+
+r_exited = 0
+
+Compute:
+
+R_g = sum_i r_i
+
+For each surviving baseline nest, calculate its unnormalized top-level weight:
+
+W_g = S_g_base * exp(A_g_scenario - A_g_baseline) * R_g ^ lambda_g
+
+If a nest disappears entirely, set its weight to zero.
+
+Within that nest:
+
+q_i_scenario = r_i / R_g
+
+7.3 New nests
+
+A new organization or plan type might enter a market with no prior nest-level share.
+
+Do not multiply its probability by a zero baseline nest share.
+
+For a completely new nest:
+
+W_new_g = exp(A_g_scenario + lambda_g * log(D_g_scenario)) / Z_top_base
+
+Here, Z_top_base is the partition value from the learned absolute nested-logit model of the baseline market, including the outside alternative.
+
+For the newly introduced nest:
+
+q_i_scenario = exp(V_i_scenario / lambda_g) / D_g_scenario
+
+Use the same learned utility scale and entry adjustment as appropriate.
+
+This allows creation of previously nonexistent organizations or plan types without assigning arbitrary market shares.
+
+The outside alternative receives an anchored top-level weight based on its observed share and any modeled utility change.
+
+Normalize all available top-level nest weights and then multiply by the conditional plan probabilities.
+
+P_i_scenario = P_g_scenario * q_i_scenario
+
+7.4 Nest changes
+
+If an existing plan changes organization or plan type between baseline and scenario, its nest assignment may change.
+
+Treat that movement as departure from the original nest and introduction into the destination nest, while preserving the plan’s identity for auditing.
+
+Document the implications for entry calibration.
+
+7.5 Numerical requirements
+
+Use log-sum-exp calculations and stable exponentiation.
+
+Guard against:
+
+* Empty nests
+* Zero-share baseline nests
+* New organizations
+* Entire organizations exiting
+* Singleton nests
+* Very small or large utilities
+* Nest parameters approaching their limits
+
+If a baseline nest has zero observed share, the ordinary anchored conditional formula is undefined. Implement an explicitly documented zero-share handling policy rather than silently dividing by zero.
+
+⸻
+
+8. Model C: Neural Utility Model
+
+Implement a shared neural utility network rather than an ordinary fixed-output MLP.
+
+Recommended architecture:
+
+Plan encoder
+
+Input:
+
+* Food benefit
+* Utility combinations
+* Other amounts
+* Organization
+* Plan type
+
+County and competition encoder
+
+Use a permutation-invariant method such as DeepSets:
+
+* Encode each available plan into a vector.
+* Aggregate competing-plan representations.
+* Combine each plan’s representation with the market representation.
+* Produce a scalar utility for each plan.
+
+Experiment with a compact masked-attention alternative only if data volume supports it.
+
+Training
+
+Train the network to predict utility scores used in a multinomial choice distribution.
+
+Use both absolute market-share information and historical pivot transitions.
+
+Inference
+
+Continuing plans:
+
+w_i = baseline_share_i * exp(delta_V_i)
+
+Entering plans:
+
+w_new = exp(V_new + learned_entry_adjustment) / Z_base_model
+
+Dropped plans:
+
+w_dropped = 0
+
+Normalize all weights.
+
+The neural model must satisfy the same exact baseline property.
+
+Do not output raw predicted shares directly from a neural network during scenario inference.
+
+The neural model should learn nonlinear benefits and interactions, not memorize county-year-plan combinations.
+
+⸻
+
+9. Training Strategy — Critical Section
+
+Use a two-stage training procedure initially, then experiment with joint training.
+
+Stage 1: Absolute utility learning
+
+Train each model using individual county-year market snapshots.
+
+For each market:
+
+1. Collect all available plans.
+2. Add outside option.
+3. Calculate predicted choice probabilities.
+4. Compare predictions against observed enrollment distribution.
+5. Update the model parameters.
+
+For standard MNL and neural utility models, use multinomial negative log-likelihood or cross-entropy calculated from observed enrollment counts.
+
+For nested logit, optimize the likelihood implied by its nested choice probabilities.
+
+At the market level, the count-based negative log-likelihood is proportional to:
+
+L_level = - sum_i enrollment_i * log(P_i)
+
+Support alternative market weighting so very large counties do not completely dominate training.
+
+This stage learns absolute utility and establishes the calibration necessary for new plans and new nests.
+
+Stage 2: Pivot-transition learning
+
+Create historical transitions between consecutive county-years.
+
+For each transition:
+
+1. Read the observed baseline market at t.
+2. Read features and plan availability at t+1.
+3. Identify entering, continuing, and exiting plans.
+4. Calculate baseline and scenario utilities.
+5. Apply the appropriate model-specific pivot.
+6. Produce predicted shares for t+1.
+7. Compare against actual shares observed in t+1.
+8. Backpropagate the transition loss through the pivot.
+
+Do not use actual t+1 enrollment as an input. It is only the training target.
+
+For count-based transition loss:
+
+L_transition = - sum_i enrollment_i_at_t_plus_1 * log(predicted_pivot_share_i)
+
+Use appropriate weighting or normalization by county-year market size.
+
+All parameters affecting pivot predictions should be trained or fine-tuned, including:
+
+* Utility coefficients
+* Relevant nonlinear parameters
+* Nest dissimilarity parameters
+* Entry adjustments
+* Competition effects
+
+Maintain the absolute utility calibration rather than optimizing only the transition loss.
+
+Combined objective
+
+Experiment with:
+
+L_total = alpha * L_level + beta * L_transition + regularization
+
+Tune alpha and beta using time-based validation.
+
+Consider a separate calibration term focused on entry events if the historical data supports it.
+
+Important training distinction
+
+Do not use unchanged-scenario identity examples as if they teach the model how benefits affect enrollment.
+
+The anchored pivot already guarantees exact identity mathematically.
+
+The model learns sensitivity from observed changes between markets over time.
+
+Training should emphasize transitions where features or market composition actually change.
+
+Limitations
+
+Some observed share changes may be caused by factors that are not available as model features.
+
+Do not automatically attribute all historical changes in enrollment to changes in food benefits, utility combinations, or other provided amounts.
+
+Use regularization and validation to reduce unstable or implausible estimates.
+
+For the optimizer, explicitly document that predictive associations do not establish causal effects.
+
+⸻
+
+10. New-Plan Entry Training
+
+This deserves special attention.
+
+Identify all historical entry events:
+
+A plan is an entrant in a county if it exists in the target market but not the baseline market.
+
+During training:
+
+1. Use the entrant’s observed attributes in the target year.
+2. Use the baseline market’s observed shares and choice set.
+3. Calculate its utility using the same shared utility model.
+4. Convert utility to a calibrated entry weight.
+5. Redistribute market share across entrants, continuing plans, and the outside alternative.
+6. Compare the entire predicted distribution with observed target-year enrollment.
+7. Learn the entry parameters from the resulting error.
+
+A new plan’s share is determined jointly with the other alternatives.
+
+Do not train a separate model that predicts an entrant’s market share independently and then adds it to the market without consistent normalization.
+
+If a dedicated entry model is tested, it should predict a calibrated utility adjustment or relative entry weight, not an unconstrained percentage.
+
+If entry data is sparse, use pooled or regularized entry parameters and report the calibration uncertainty.
+
+Do not claim entry-share estimates are well validated if historical entry events are insufficient.
+
+⸻
+
+11. Plan Exit Training
+
+Identify historical exit events.
+
+For each event:
+
+1. Start with the actual baseline enrollment distribution.
+2. Remove the exiting plan from the target choice set.
+3. Calculate changed utilities and pivot weights.
+4. Normalize across surviving plans, new entrants, and outside option.
+5. Compare predicted target shares with actual outcomes.
+
+The model must distinguish between:
+
+* Members moving to other plans
+* Members moving to other organizations
+* Members moving between plan types
+* Members moving outside the modeled plans
+
+For nested logit, specifically evaluate whether exit-related share changes concentrate within the exiting plan’s organization or plan type.
+
+Do not assume all displaced enrollment transfers to the remaining plans proportionally in the nested model.
+
+The nested-logit structure should determine the substitution pattern.
+
+Remember that aggregate enrollment observations show changes in shares, not actual individual member-switching paths. Do not claim to identify individual migration without member-level data.
+
+⸻
+
+12. Baseline Preservation
+
+This is a strict system invariant.
+
+Given identical baseline and scenario:
+
+* Same county
+* Same total eligibles
+* Same set of available plans
+* Same plan features
+* Same market context
+
+the output must exactly equal the observed baseline shares.
+
+For example:
+
+Plan	Baseline share	Unchanged scenario
+Plan A	40%	40%
+Plan B	35%	35%
+Outside	25%	25%
+Total	100%	100%
+
+The model may internally predict different absolute shares.
+
+That must not affect this result.
+
+Implement an exact identity short-circuit returning the stored observed shares if the baseline and scenario inputs are equivalent.
+
+Also verify the mathematical pivot independently, allowing normal floating-point tolerances.
+
+Changes to organization or plan type should count as meaningful scenario changes if those fields determine utilities or nesting.
+
+⸻
+
+13. Variable Total Eligibles
+
+The model should distinguish two different effects:
+
+Market-share changes: Driven by benefit changes, competition, plan availability, and available county characteristics.
+
+Enrollment-count changes: Driven by predicted shares multiplied by total eligibles.
+
+predicted_enrollment_i = predicted_share_i * scenario_total_eligibles
+
+If total eligibles changes, the model may adjust utilities when eligible-population size or other known county characteristics are part of the specification.
+
+However, ensure that annual population changes are not automatically interpreted as changes caused by benefit design.
+
+For an optimizer evaluating benefit configurations, default to holding total eligibles constant at the baseline value unless the scenario explicitly changes them.
+
+⸻
+
+14. Training and Validation Splits
+
+Use chronological splits to avoid future leakage.
+
+For example:
+
+* Earlier years: Training
+* Subsequent year(s): Validation
+* Most recent available year(s): Final test
+
+Do not randomly split individual plan rows across training and validation, because rows from the same county-year market are strongly dependent.
+
+The entire market must remain in one split.
+
+For transition records, split by the target year and ensure the labels from a validation/test target year were never used for fitting.
+
+Also consider county holdouts to test generalization.
+
+Fit preprocessing transformations only on training data.
+
+Support unseen organizations through unknown-category handling or shared hierarchical effects.
+
+⸻
+
+15. Model Evaluation
+
+Evaluate predictive quality on held-out historical transitions.
+
+Overall metrics
+
+Calculate:
+
+* Market-share MAE
+* Market-share RMSE
+* Enrollment-count MAE
+* Multinomial negative log-likelihood
+* Observed versus predicted share-change error
+* Outside-option share error
+* Share calibration
+* Computational inference time
+
+Report plan-weighted and market-weighted metrics where appropriate.
+
+Segment-level metrics
+
+Evaluate performance separately for:
+
+1. Continuing plans without entry or exit
+2. Entry of one plan
+3. Entry of several plans
+4. Exit of one plan
+5. Exit of several plans
+6. Simultaneous entry and exit
+7. Changes in food benefits
+8. Changes in other benefits
+9. Markets with few plans
+10. Markets with many plans
+11. Smaller versus larger eligible populations
+
+For entrants, calculate both initial-share error and its effect on incumbent shares.
+
+For exits, evaluate the predicted destination distribution of displaced aggregate market share, without claiming individual member movements are observed.
+
+For nested logit, compare organization-level and plan-type-level aggregation errors.
+
+⸻
+
+16. Required Unit Tests
+
+Build automated tests covering:
+
+Test A: No-change identity
+
+All model variants return observed shares exactly.
+
+Test B: Benefit increase
+
+Increase food benefits for one continuing plan and confirm the model produces a valid, normalized pivot.
+
+Check numerical sensitivity and reasonableness; do not hardcode a share increase unless monotonic utility has been explicitly constrained.
+
+Test C: New plan
+
+Add a plan with no historical market share. Confirm a finite, nonnegative entry probability and valid normalization.
+
+Test D: Dropped plan
+
+Remove one plan. Confirm its predicted share is zero and that all surviving alternatives, including outside, normalize correctly.
+
+Test E: Multiple new plans
+
+Add several entrants, potentially belonging to different organizations or plan types.
+
+Test F: New organization
+
+Create an entirely new organization nest.
+
+Test G: Entire nest disappears
+
+Remove every plan from an organization or plan type.
+
+Test H: Nested-logit limits
+
+Check that all dissimilarity parameters stay within the valid range. Verify appropriate equivalence with MNL at the no-nesting limit under a consistent, calibrated baseline.
+
+Test I: Variable plan counts
+
+Test counties with 1, 2, 5, 10, and 30 plans.
+
+Test J: Edge cases
+
+Test zero observed shares, an empty plan market, a zero outside share, extremely small weights, and missing categories.
+
+Develop explicit handling policies for zero-share alternatives. An available incumbent with zero observed enrollment cannot gain share through an ordinary zero-times-exponential pivot. Handle such cases through a documented entrant-like activation or another calibrated mechanism while preserving no-change identity.
+
+If all plans disappear, the outside alternative must receive the entire market when it represents the valid remaining choice.
+
+Test K: Scenario reversibility
+
+Evaluate a modified scenario and then restore all original features and plan availability. Confirm recovery of the exact original baseline shares, rather than anchoring unintentionally to the previous prediction.
+
+⸻
+
+17. Optimizer Integration
+
+Implement the following primary interface:
+
+predict_pivot(baseline_market, scenario_market, model_type)
+
+Inputs:
+
+* Observed baseline market with actual enrollment shares
+* Scenario plan characteristics
+* Available plans after entry and exit
+* Total eligibles
+* Selected trained model
+
+Outputs:
+
+* Predicted shares
+* Predicted enrollment counts
+* Changes from baseline
+* Entry/exit flags
+* Organization and plan-type aggregate shares
+* Optional utility changes and diagnostics
+
+Also implement a batch interface for thousands of scenarios.
+
+Performance requirements
+
+* Reuse cached baseline utilities.
+* Reuse baseline nest statistics where possible.
+* Batch model evaluations.
+* Use numerical stabilization.
+* Avoid unnecessary retraining for each optimizer scenario.
+* Support gradient-based optimization when feasible.
+* Support finite-difference sensitivities when gradients are unavailable.
+
+Categorical plan features are generally discrete optimization variables; do not imply they have ordinary continuous derivatives.
+
+Allow the optimizer to change food benefits, utility combinations, and other amounts.
+
+Return scenario comparisons against the same fixed observed baseline unless the caller explicitly requests sequential scenario simulation.
+
+⸻
+
+18. Model Comparison and Selection
+
+Compare:
+
+Model	Structure
+A	Anchored MNL
+B1	Anchored Nested Logit, organization nests
+B2	Anchored Nested Logit, plan-type nests
+C	Anchored Neural Utility, DeepSets
+
+Provide an ablation study comparing:
+
+* Absolute utility training only
+* Absolute utility followed by transition fine-tuning
+* Joint absolute and transition training
+* With and without entry adjustment
+* With and without competitor-context features
+
+Select the model based primarily on:
+
+1. Accuracy of incremental share changes
+2. Accuracy of plan-entry predictions
+3. Accuracy of plan-exit redistribution
+4. Stability under optimizer scenarios
+5. Calibration and plausible sensitivity
+6. Inference speed
+7. Simplicity and interpretability
+
+Do not automatically select the most complex neural model.
+
+A simpler nested-logit model may be preferable if it provides competitive accuracy with more stable substitution patterns.
+
+⸻
+
+19. Implementation Deliverables
+
+Provide a complete runnable Python project with:
+
+* data_validation.py
+* preprocessing.py
+* market_transitions.py
+* utility_models.py
+* mnl_model.py
+* nested_logit.py
+* neural_utility.py
+* pivot.py
+* training.py
+* evaluation.py
+* optimizer_interface.py
+* tests/
+* config.yaml
+* README.md
+
+Use suitable scientific Python and machine-learning libraries. PyTorch is acceptable for differentiable models; use existing numerical optimization libraries when appropriate.
+
+Include:
+
+1. Documented input data schema
+2. Synthetic example dataset demonstrating entering, continuing, and exiting plans
+3. Full preprocessing pipeline
+4. Model fitting scripts
+5. Model selection and backtesting
+6. Serialized trained models
+7. Unit tests
+8. Batch inference examples
+9. Parameter interpretation and sensitivity reports
+10. Instructions for retraining as new years of enrollment data arrive
+
+Make randomness reproducible.
+
+Use configuration files for hyperparameters, nest definitions, features, and training weights.
+
+⸻
+
+20. Important Mathematical and Statistical Safeguards
+
+Before implementation, explicitly check the following:
+
+1. Identifiability: Utility levels must be identifiable relative to a common reference, especially for estimating new-plan attractiveness. Relative utility changes alone are insufficient to initialize entrants.
+2. No arbitrary entry weight: Do not mix exp(V_new) directly with incumbent observed-share weights without calibration.
+3. True nested-logit behavior: Use inclusive values and properly constrained dissimilarity parameters. A model with organization dummy variables but flat softmax is not nested logit.
+4. Exact pivot preservation: Never overwrite observed baseline shares with the absolute utility model’s estimates.
+5. Joint competition: Plan shares must be calculated together inside each county market, not through independently predicted percentages.
+6. Market conservation: Shares across available plans and the outside option must equal one.
+7. Leakage prevention: Historical target-year enrollment can be used only as the target, never as a scenario input.
+8. Sparse-entry identification: If historical data contains too few genuine entry or exit events, report the limitation and avoid falsely precise forecasts.
+9. Unobserved market changes: Recognize that omitted variables, marketing, switching costs, and annual market conditions may influence observed enrollment changes.
+10. Causal interpretation: Do not claim that a learned association between benefits and market share is automatically a causal treatment effect.
+11. Uncertainty: Provide sensitivity analysis, bootstrap intervals, or other appropriate uncertainty measures for optimizer-facing predictions where feasible.
+
+⸻
+
+21. Development Sequence
+
+Implement in this order:
+
+Phase 1 — Data and market construction
+
+Build county-year markets, outside options, stable plan matching, and transition labels.
+
+Phase 2 — Simple MNL
+
+Implement absolute utility fitting and the correctly calibrated pivot. Ensure exact identity, entry, and exit tests pass.
+
+Phase 3 — Nested logit
+
+Implement organization-based and plan-type-based nesting, with corresponding pivot equations, including new and disappearing nests.
+
+Phase 4 — Neural utility
+
+Implement a shared neural model with competition-aware representations and the same pivot API.
+
+Phase 5 — Historical backtesting
+
+Train, validate, and compare using chronological transitions. Study benefit sensitivity, entry, and exit separately.
+
+Phase 6 — Production optimizer API
+
+Implement fast batched scenario evaluation, caching, sensitivity calculations, and diagnostics.
+
+Before beginning each phase, explain the proposed implementation briefly. Then implement the runnable code and tests, rather than stopping at a conceptual design.
+
+Final expectation: Deliver a fully trainable system that predicts incremental changes in healthcare plan enrollment share, supports varying numbers of plans and market entry/exit, and exactly preserves the observed baseline whenever a scenario is unchanged.p
